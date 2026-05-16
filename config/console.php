@@ -8,6 +8,7 @@ use App\Console\CacheClear;
 use App\Console\RouteList;
 use App\Console\SyncAiInstructions;
 use App\Console\Help;
+use App\Console\Migrate;
 
 return [
     'make:controller' => ['class' => MakeController::class, 'description' => 'Scaffold a new controller + test'],
@@ -19,5 +20,6 @@ return [
         'class' => SyncAiInstructions::class,
         'description' => 'Sync AGENTS.md to all AI config files',
     ],
+    'migrate' => ['class' => Migrate::class, 'description' => 'Run pending database migrations'],
     'help' => ['class' => Help::class, 'description' => 'Display available commands'],
 ];

@@ -35,7 +35,7 @@
         ],
         "start": "php -S localhost:8080 -t public",
         "test": "phpunit",
-        "migrate": "php migrate",
+        "migrate": "php console migrate",
         "lint": "phpcs --standard=phpcs.xml.dist",
         "stan": "phpstan analyse --configuration=phpstan.neon.dist",
         "cs-fix": "phpcbf --standard=phpcs.xml.dist",

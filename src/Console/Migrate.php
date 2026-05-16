@@ -1,0 +1,75 @@
+<?php
+
+namespace App\Console;
+
+use DI\Container;
+use Doctrine\DBAL\DriverManager;
+
+class Migrate implements CommandInterface
+{
+    /**
+     * @param array<int, string> $args
+     */
+    public function execute(array $args, Container $container): int
+    {
+        $driver = $_ENV['DB_DRIVER'] ?? 'pdo_sqlite';
+        $params = match ($driver) {
+            'pdo_sqlite' => [
+                'driver' => 'pdo_sqlite',
+                'path' => $_ENV['DB_PATH'] ?? dirname(__DIR__, 2) . '/var/database.sqlite',
+            ],
+            default => [
+                'driver' => $driver,
+                'host' => $_ENV['DB_HOST'] ?? 'localhost',
+                'port' => $_ENV['DB_PORT'] ?? '3306',
+                'dbname' => $_ENV['DB_NAME'] ?? 'app',
+                'user' => $_ENV['DB_USER'] ?? 'root',
+                'password' => $_ENV['DB_PASS'] ?? '',
+                'charset' => $_ENV['DB_CHARSET'] ?? 'utf8mb4',
+            ],
+        };
+
+        $conn = DriverManager::getConnection($params);
+
+        $conn->executeStatement('CREATE TABLE IF NOT EXISTS _migrations (
+            version VARCHAR(255) PRIMARY KEY,
+            executed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )');
+
+        $executed = $conn->fetchFirstColumn('SELECT version FROM _migrations ORDER BY version');
+
+        $files = glob(dirname(__DIR__, 2) . '/migrations/*.sql');
+        if ($files === false) {
+            $files = [];
+        }
+        sort($files);
+
+        $count = 0;
+
+        foreach ($files as $file) {
+            $version = basename($file);
+
+            if (in_array($version, $executed)) {
+                echo "Skipped: {$version}\n";
+                continue;
+            }
+
+            $sql = file_get_contents($file);
+            if ($sql === false) {
+                echo "Error reading: {$version}\n";
+                continue;
+            }
+            $conn->executeStatement($sql);
+            $conn->insert('_migrations', ['version' => $version]);
+
+            echo "Migrated: {$version}\n";
+            $count++;
+        }
+
+        if ($count === 0) {
+            echo "Nothing to migrate.\n";
+        }
+
+        return 0;
+    }
+}

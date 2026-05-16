@@ -58,7 +58,7 @@ already understand the patterns. The file `AGENTS.md` contains detailed instruct
 ```bash
 composer create-project n0nag0n/slim-ai-skeleton my-project
 cd my-project
-php migrate
+composer migrate
 composer start
 ```
 
