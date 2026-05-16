@@ -53,10 +53,18 @@ $errorMiddleware->setDefaultErrorHandler(
 
         if (str_contains($accept, 'text/html')) {
             $twig = $app->getContainer()->get(\Slim\Views\Twig::class);
-            $template = $code === 404 ? 'error/404.twig' : 'error/500.twig';
+
+            if ($code === 404) {
+                return $twig->render(
+                    $app->getResponseFactory()->createResponse(404),
+                    'error/404.twig'
+                );
+            }
+
             return $twig->render(
-                $app->getResponseFactory()->createResponse($code),
-                $template
+                $app->getResponseFactory()->createResponse(500),
+                'error/500.twig',
+                ['message' => $exception->getMessage()]
             );
         }
 
