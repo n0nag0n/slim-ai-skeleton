@@ -1,6 +1,7 @@
 {
     "name": "n0nag0n/slim-ai-skeleton",
     "description": "AI-friendly Slim 4 skeleton",
+    "license": "MIT",
     "type": "project",
     "require": {
         "php": "^8.2",
