@@ -26,6 +26,9 @@
         }
     },
     "scripts": {
+        "post-install-cmd": [
+            "cp -n .env.example .env || true"
+        ],
         "start": "php -S localhost:8080 -t public",
         "test": "phpunit",
         "migrate": "php migrate",
