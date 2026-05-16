@@ -21,10 +21,10 @@ ready to go. Everything is set up so you can start adding your own pages and fea
 ## Features (plain English)
 
 - **Slim 4** — a lightweight PHP framework for handling web requests and responses
-- **PHP-DI** — automatically wires up your classes so you don't have to manually create them
-- **Doctrine DBAL** — a tool for running SQL queries safely (not a full ORM, just the query layer)
+- **PHP-DI** — automatic dependency injection container
+- **Doctrine DBAL** — database query layer with parameterized queries
 - **Twig** — a template system for building HTML pages separate from your PHP code
-- **Session handling** — a simple `App\Util\Session` class wraps PHP's native sessions, injectable via constructor (no superglobals in your code)
+- **Session handling** — `App\Util\Session` wraps PHP's native sessions and is injectable via constructor
 - **Flash messages** — one-request survival messages for form submission feedback via `App\Util\Flash`
 - **Validation** — method-chaining input validation with `App\Util\Validator` (required, email, length, matches, etc.)
 - **Pagination** — offset/limit calculator with `App\Util\Pagination` for list endpoints
@@ -33,7 +33,7 @@ ready to go. Everything is set up so you can start adding your own pages and fea
 - **PHPUnit** — testing framework to make sure your code works
 - **PHPStan** — static analysis to catch bugs before runtime
 - **PHP_CodeSniffer** — enforces consistent code style
-- **SQLite by default** — uses a file-based database so you don't need to install MySQL or PostgreSQL
+- **SQLite by default** — file-based database, no need for MySQL or PostgreSQL
 
 ## How AI fits in
 
@@ -123,7 +123,7 @@ Here's how to add a new page at `/hello`:
 ```
 ├── config/
 │   ├── console.php           # CLI command definitions
-│   ├── dependencies.php      # Where services are registered (rarely edit this)
+│   ├── dependencies.php      # Service definitions for the DI container
 │   ├── middleware.php         # Middleware stack (runs on every request)
 │   └── routes.php            # ALL routes in one file — add new pages here
 ├── migrations/               # Database migration files (SQL)
