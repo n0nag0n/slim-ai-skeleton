@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Test\Console;
 
 use App\Console\Migrate;
@@ -32,8 +34,8 @@ class MigrateTest extends TestCase
 
     public function testRunsPendingMigrations(): void
     {
-        $container = (new ContainerBuilder)->build();
-        $command = new Migrate;
+        $container = (new ContainerBuilder())->build();
+        $command = new Migrate();
 
         ob_start();
         $exitCode = $command->execute([], $container);
@@ -45,8 +47,8 @@ class MigrateTest extends TestCase
 
     public function testNothingToMigrateOnSecondRun(): void
     {
-        $container = (new ContainerBuilder)->build();
-        $command = new Migrate;
+        $container = (new ContainerBuilder())->build();
+        $command = new Migrate();
 
         ob_start();
         $command->execute([], $container);

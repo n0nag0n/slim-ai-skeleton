@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Test\Console;
 
 use App\Console\MakeController;
@@ -32,8 +34,8 @@ class MakeControllerTest extends TestCase
 
     public function testCreatesControllerAndTest(): void
     {
-        $container = (new ContainerBuilder)->build();
-        $command = new MakeController;
+        $container = (new ContainerBuilder())->build();
+        $command = new MakeController();
 
         ob_start();
         $exitCode = $command->execute([$this->name], $container);
@@ -52,8 +54,8 @@ class MakeControllerTest extends TestCase
 
     public function testReturnsErrorWithoutName(): void
     {
-        $container = (new ContainerBuilder)->build();
-        $command = new MakeController;
+        $container = (new ContainerBuilder())->build();
+        $command = new MakeController();
 
         ob_start();
         $exitCode = $command->execute([], $container);

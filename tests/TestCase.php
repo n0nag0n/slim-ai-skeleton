@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Test;
 
 use DI\ContainerBuilder;
@@ -15,7 +17,7 @@ class TestCase extends PHPUnitTestCase
 
     protected function createApp(): App
     {
-        $containerBuilder = new ContainerBuilder;
+        $containerBuilder = new ContainerBuilder();
         $containerBuilder->addDefinitions(__DIR__ . '/../config/dependencies.php');
         $container = $containerBuilder->build();
 
@@ -32,7 +34,7 @@ class TestCase extends PHPUnitTestCase
 
     protected function createRequest(string $method, string $path): \Psr\Http\Message\ServerRequestInterface
     {
-        return (new ServerRequestFactory)->createServerRequest($method, $path);
+        return (new ServerRequestFactory())->createServerRequest($method, $path);
     }
 
     protected function runMigrations(): void

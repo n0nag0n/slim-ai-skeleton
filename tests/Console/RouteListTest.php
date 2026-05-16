@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Test\Console;
 
 use App\Console\RouteList;
@@ -10,11 +12,11 @@ class RouteListTest extends TestCase
 {
     public function testListsRegisteredRoutes(): void
     {
-        $containerBuilder = new ContainerBuilder;
+        $containerBuilder = new ContainerBuilder();
         $containerBuilder->addDefinitions(dirname(__DIR__, 2) . '/config/dependencies.php');
         $container = $containerBuilder->build();
 
-        $command = new RouteList;
+        $command = new RouteList();
 
         ob_start();
         $exitCode = $command->execute([], $container);

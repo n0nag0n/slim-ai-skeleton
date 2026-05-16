@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Test\Console;
 
 use App\Console\SyncAiInstructions;
@@ -24,7 +26,7 @@ class SyncAiInstructionsTest extends TestCase
 
     public function testSyncsToAllTargets(): void
     {
-        $container = (new ContainerBuilder)->build();
+        $container = (new ContainerBuilder())->build();
         $command = new SyncAiInstructions($this->tempDir);
 
         ob_start();

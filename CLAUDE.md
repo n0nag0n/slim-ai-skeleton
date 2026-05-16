@@ -292,6 +292,28 @@ $method = $request->getMethod();
 
 Tests set `$_ENV` values in `tests/bootstrap.php` before the container is built.
 
+### Type Declarations
+
+Every PHP file must begin with `declare(strict_types=1);` — enforced by phpcs. This eliminates type coercion ambiguity and makes method signatures fully reliable.
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Util;
+
+class Slugger
+{
+    public function slugify(string $text): string
+    {
+        // ...
+    }
+}
+```
+
+Name methods and classes so they are self-documenting. A name like `findByStatus(string $status): array` needs no docblock — the type signature and name say everything. Reserve comments for explaining *why*, not *what*.
+
 ### Error Handling
 
 The error handler in `public/index.php`:

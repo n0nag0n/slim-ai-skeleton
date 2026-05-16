@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Test\Console;
 
 use App\Console\CacheClear;
@@ -26,8 +28,8 @@ class CacheClearTest extends TestCase
 
     public function testSkipsWhenDirectoriesDontExist(): void
     {
-        $container = (new ContainerBuilder)->build();
-        $command = new CacheClear;
+        $container = (new ContainerBuilder())->build();
+        $command = new CacheClear();
 
         ob_start();
         $exitCode = $command->execute([], $container);
@@ -44,8 +46,8 @@ class CacheClearTest extends TestCase
         file_put_contents($this->twigCache . '/test.php', 'test');
         file_put_contents($this->diCache . '/CompiledContainer.php', 'test');
 
-        $container = (new ContainerBuilder)->build();
-        $command = new CacheClear;
+        $container = (new ContainerBuilder())->build();
+        $command = new CacheClear();
 
         ob_start();
         $exitCode = $command->execute([], $container);

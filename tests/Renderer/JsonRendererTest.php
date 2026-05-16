@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Test\Renderer;
 
 use App\Renderer\JsonRenderer;
@@ -13,8 +15,8 @@ class JsonRendererTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->renderer = new JsonRenderer;
-        $this->factory = new ResponseFactory;
+        $this->renderer = new JsonRenderer();
+        $this->factory = new ResponseFactory();
     }
 
     public function testRendersArrayAsJson(): void

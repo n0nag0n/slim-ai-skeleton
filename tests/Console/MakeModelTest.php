@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Test\Console;
 
 use App\Console\MakeModel;
@@ -29,8 +31,8 @@ class MakeModelTest extends TestCase
 
     public function testCreatesModelMigrationAndTest(): void
     {
-        $container = (new ContainerBuilder)->build();
-        $command = new MakeModel;
+        $container = (new ContainerBuilder())->build();
+        $command = new MakeModel();
         $root = dirname(__DIR__, 2);
 
         ob_start();
@@ -63,8 +65,8 @@ class MakeModelTest extends TestCase
 
     public function testReturnsErrorWithoutName(): void
     {
-        $container = (new ContainerBuilder)->build();
-        $command = new MakeModel;
+        $container = (new ContainerBuilder())->build();
+        $command = new MakeModel();
 
         ob_start();
         $exitCode = $command->execute([], $container);

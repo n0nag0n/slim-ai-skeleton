@@ -17,7 +17,8 @@
         "phpunit/phpunit": "^11.0",
         "phpstan/phpstan": "^2.1",
         "phpstan/phpstan-doctrine": "^2.0",
-        "squizlabs/php_codesniffer": "^4.0"
+        "squizlabs/php_codesniffer": "^4.0",
+        "slevomat/coding-standard": "*"
     },
     "autoload": {
         "psr-4": {
@@ -40,5 +41,10 @@
         "stan": "phpstan analyse --configuration=phpstan.neon.dist",
         "cs-fix": "phpcbf --standard=phpcs.xml.dist",
         "sync-ai-instructions": "php console sync-ai-instructions"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     }
 }

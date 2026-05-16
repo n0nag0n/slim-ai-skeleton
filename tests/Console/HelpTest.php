@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Test\Console;
 
 use App\Console\Help;
@@ -10,8 +12,8 @@ class HelpTest extends TestCase
 {
     public function testListsAllCommands(): void
     {
-        $container = (new ContainerBuilder)->build();
-        $command = new Help;
+        $container = (new ContainerBuilder())->build();
+        $command = new Help();
 
         ob_start();
         $exitCode = $command->execute([], $container);

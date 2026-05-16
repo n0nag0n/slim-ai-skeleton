@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Test\Console;
 
 use App\Console\MakeMigration;
@@ -19,8 +21,8 @@ class MakeMigrationTest extends TestCase
 
     public function testCreatesMigrationFile(): void
     {
-        $container = (new ContainerBuilder)->build();
-        $command = new MakeMigration;
+        $container = (new ContainerBuilder())->build();
+        $command = new MakeMigration();
 
         ob_start();
         $exitCode = $command->execute(['test_migration_description'], $container);
@@ -42,8 +44,8 @@ class MakeMigrationTest extends TestCase
 
     public function testReturnsErrorWithoutDescription(): void
     {
-        $container = (new ContainerBuilder)->build();
-        $command = new MakeMigration;
+        $container = (new ContainerBuilder())->build();
+        $command = new MakeMigration();
 
         ob_start();
         $exitCode = $command->execute([], $container);

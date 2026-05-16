@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Console\CommandInterface;
 use App\Console\MakeController;
 use App\Console\MakeModel;

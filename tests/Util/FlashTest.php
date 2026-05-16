@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Test\Util;
 
 use App\Util\Flash;
@@ -18,7 +20,7 @@ class FlashTest extends TestCase
 
     public function testSetAndGetSameRequest(): void
     {
-        $session = new Session;
+        $session = new Session();
         $flash = new Flash($session);
         $flash->set('success', 'Done.');
         $this->assertSame('Done.', $flash->get('success'));
@@ -27,20 +29,20 @@ class FlashTest extends TestCase
     public function testFlashDeletedAfterOneReadCrossRequest(): void
     {
         // Simulate Request A (POST) — set flash
-        $sessionA = new Session;
+        $sessionA = new Session();
         $flashA = new Flash($sessionA);
         $flashA->set('success', 'Operation completed.');
         $sessionA->save();
 
         // Simulate Request B (GET after redirect) — read flash
-        $sessionB = new Session;
+        $sessionB = new Session();
         $flashB = new Flash($sessionB);
         $this->assertTrue($flashB->has('success'), 'Flash should exist on first read');
         $this->assertSame('Operation completed.', $flashB->get('success'));
         $sessionB->save();
 
         // Simulate Request C (next GET) — flash should be GONE
-        $sessionC = new Session;
+        $sessionC = new Session();
         $flashC = new Flash($sessionC);
         $this->assertFalse($flashC->has('success'), 'Flash should be deleted after one read');
         $this->assertNull($flashC->get('success'));

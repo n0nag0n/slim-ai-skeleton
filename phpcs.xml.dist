@@ -3,7 +3,16 @@
     <description>PHPCS rules for slim-ai-skeleton</description>
     <file>src/</file>
     <file>config/</file>
+    <file>tests/</file>
     <file>public/index.php</file>
+    <file>console</file>
     <rule ref="PSR12"/>
+    <rule ref="SlevomatCodingStandard.TypeHints.DeclareStrictTypes">
+        <properties>
+            <property name="linesCountBeforeDeclare" value="1"/>
+            <property name="linesCountAfterDeclare" value="1"/>
+            <property name="spacesCountAroundEqualsSign" value="0"/>
+        </properties>
+    </rule>
     <exclude-pattern>src/Debug/</exclude-pattern>
 </ruleset>

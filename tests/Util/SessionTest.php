@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Test\Util;
 
 use App\Util\Session;
@@ -11,7 +13,7 @@ class SessionTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->session = new Session;
+        $this->session = new Session();
     }
 
     protected function tearDown(): void
@@ -93,8 +95,8 @@ class SessionTest extends TestCase
 
     public function testMultipleSessionsAreIndependent(): void
     {
-        $s1 = new Session;
-        $s2 = new Session;
+        $s1 = new Session();
+        $s2 = new Session();
 
         $s1->set('foo', 'bar');
         $this->assertFalse($s2->has('foo'));
