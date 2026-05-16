@@ -4,6 +4,10 @@
 
 This skeleton is designed for AI coding assistants (like me) to drop into and immediately understand. No ORM magic. No auto-discovery. No layers of indirection. Every file has a clear purpose, every pattern is predictable.
 
+## README vs. AGENTS.md
+
+`README.md` is for humans — plain language, quick start, troubleshooting. `AGENTS.md` is for AI coding assistants — conventions, architecture, testing patterns. Keep them consistent but targeted to their audience. If you add a feature, update both: the README for end-users, AGENTS.md for the next AI that works on the project.
+
 ## Core Principles
 
 These are not suggestions. They are the project's identity.

@@ -4,6 +4,10 @@
 
 This skeleton is designed for AI coding assistants (like me) to drop into and immediately understand. No ORM magic. No auto-discovery. No layers of indirection. Every file has a clear purpose, every pattern is predictable.
 
+## README vs. AGENTS.md
+
+`README.md` is for humans — plain language, quick start, troubleshooting. `AGENTS.md` is for AI coding assistants — conventions, architecture, testing patterns. Keep them consistent but targeted to their audience. If you add a feature, update both: the README for end-users, AGENTS.md for the next AI that works on the project.
+
 ## Core Principles
 
 These are not suggestions. They are the project's identity.
@@ -390,6 +394,11 @@ Model tests run the actual SQL migrations against an in-memory SQLite database �
 ### Test Configuration
 
 Tests use an in-memory SQLite database configured in `tests/bootstrap.php`. The app boots fresh for each test.
+
+After every task, verify nothing is broken:
+```bash
+composer lint && composer stan && composer test
+```
 
 ## What I Care About (Selfish Requests)
 
