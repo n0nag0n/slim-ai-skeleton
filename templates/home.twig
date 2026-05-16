@@ -1,0 +1,29 @@
+{% extends "layout.twig" %}
+
+{% block title %}Home — slim-ai-skeleton{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>{{ app }} v{{ version }}</h2>
+    <p>Your skeleton is running.</p>
+
+    <hr>
+
+    <h3>Available Endpoints</h3>
+    <ul>
+        <li><code>GET /</code> — this page</li>
+        <li><code>GET /health</code> — JSON health check</li>
+    </ul>
+
+    <hr>
+
+    <h3>Project Structure</h3>
+    <ul>
+        <li><code>config/</code> — DI, middleware, routes</li>
+        <li><code>src/Controller/</code> — request handlers</li>
+        <li><code>src/Model/</code> — DBAL query layer</li>
+        <li><code>src/Renderer/</code> — response formatters</li>
+        <li><code>templates/</code> — Twig views</li>
+    </ul>
+</div>
+{% endblock %}

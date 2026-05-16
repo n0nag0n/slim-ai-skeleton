@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}slim-ai-skeleton{% endblock %}</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a2e; background: #f5f5f5; line-height: 1.6; }
+        header { background: #1a1a2e; color: #fff; padding: 2rem; text-align: center; }
+        header h1 { font-size: 2rem; font-weight: 300; }
+        header h1 strong { font-weight: 600; }
+        main { max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+        .card { background: #fff; border-radius: 8px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+        code { background: #eef; padding: .15rem .4rem; border-radius: 4px; font-size: .9em; }
+        ul { padding-left: 1.5rem; }
+        li { margin-bottom: .5rem; }
+        hr { border: none; border-top: 1px solid #e0e0e0; margin: 1.5rem 0; }
+        footer { text-align: center; padding: 2rem; color: #666; font-size: .9rem; }
+        a { color: #4361ee; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><strong>slim-ai-skeleton</strong></h1>
+        <p>AI-Friendly Slim 4 Starter</p>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <p>Running Slim {{ constant('Slim\\App::VERSION') }}</p>
+    </footer>
+</body>
+</html>
