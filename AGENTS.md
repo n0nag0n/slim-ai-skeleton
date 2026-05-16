@@ -79,6 +79,9 @@ public/index.php
   → creates Slim app via DI\Bridge\Slim\Bridge
   → applies middleware from config/middleware.php
   → registers routes from config/routes.php
+  → adds TracyMiddleware (debug only) — captures request/response for panels
+  → adds RoutingMiddleware + BodyParsingMiddleware
+  → registers Tracy panels via ExtensionLoader (debug only)
   → sets up error handler (content-negotiated)
   → runs
 ```
@@ -90,13 +93,19 @@ public/index.php
 | `public/index.php` | Front controller. Bootstraps everything. |
 | `config/dependencies.php` | All DI definitions in one file. |
 | `config/routes.php` | ALL routes in one file. Add new routes here. |
-| `config/middleware.php` | Middleware stack. Currently: TwigMiddleware. |
+| `config/middleware.php` | Middleware stack. TwigMiddleware + app middleware. |
 | `migrations/*.sql` | Timestamped SQL files. Run via `php migrate`. |
 | `src/Controller/*.php` | Request handlers. Each method receives `Request` + returns `Response`. |
 | `src/Model/*.php` | DBAL query wrappers. Constructor-inject `Connection`. |
+| `src/Debug/TracyMiddleware.php` | Captures PSR-7 request/response into static props for Tracy panels. |
+| `src/Debug/DbalQueryLogger.php` | DBAL Driver Middleware — captures query timing/SQL/params for the database panel. |
+| `src/Debug/DbalQueries.php` | Query data container shared between DbalQueryLogger and DatabasePanel. |
+| `src/Debug/Tracy/*.php` | Tracy bar panels: Request, Response, Routes, Session, Database. |
 | `src/Util/*.php` | Utility classes. Pure logic, no HTTP or DB dependencies. |
+| `src/Util/Session.php` | Session wrapper. Inject into controllers/services instead of using `$_SESSION`. |
 | `src/Renderer/JsonRenderer.php` | JSON response helper. |
-| `templates/*.twig` | Twig views. `layout.twig` is the base. |
+| `templates/*.twig` | Twix views. `layout.twig` is the base. |
+| `templates/error/*.twig` | Error pages (404, 500). |
 | `templates/error/*.twig` | Error pages (404, 500). |
 | `tests/TestCase.php` | Base test class. Provides `createApp()` and `createRequest()`. |
 
@@ -165,6 +174,30 @@ return [
     },
 ];
 ```
+
+### Using Sessions
+
+Inject `App\Util\Session` via constructor. The session is auto-started by middleware before controllers run.
+
+```php
+class SomeController
+{
+    public function __construct(private \App\Util\Session $session) {}
+
+    public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $this->session->set('user_id', 42);
+        $userId = $this->session->get('user_id');
+        $this->session->delete('user_id');
+        $this->session->regenerate();
+        // ...
+    }
+}
+```
+
+Available methods: `get()`, `set()`, `delete()`, `has()`, `clear()`, `all()`, `getId()`, `regenerate()`, `destroy()`, `start()`.
+
+Never use `$_SESSION` directly in application code — always inject `Session`.
 
 ### Environment Variables
 

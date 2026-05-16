@@ -3,11 +3,17 @@
 use Doctrine\DBAL\DriverManager;
 use App\Renderer\JsonRenderer;
 use App\Model\Post;
+use App\Util\Session;
 use Doctrine\DBAL\Connection;
 use Slim\Views\Twig;
+use Doctrine\DBAL\Configuration;
+use App\Debug\DbalQueryLogger;
 
 return [
+    Session::class => DI\autowire(),
+
     Connection::class => function () {
+        $debug = filter_var($_ENV['DEBUG_MODE'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $driver = $_ENV['DB_DRIVER'] ?? 'pdo_sqlite';
         $root = dirname(__DIR__);
 
@@ -26,6 +32,13 @@ return [
                 'charset' => $_ENV['DB_CHARSET'] ?? 'utf8mb4',
             ],
         };
+
+        if ($debug) {
+            $config = new Configuration();
+            $config->setMiddlewares([new DbalQueryLogger()]);
+            return DriverManager::getConnection($params, $config);
+        }
+
         return DriverManager::getConnection($params);
     },
 

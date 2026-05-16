@@ -28,10 +28,18 @@ $app = DI\Bridge\Slim\Bridge::create($container);
 
 (require $rootPath . '/config/routes.php')($app);
 
+if ($debug) {
+    $app->add(\App\Debug\TracyMiddleware::class);
+}
+
 $app->addRoutingMiddleware();
 $app->addBodyParsingMiddleware();
 
 $errorMiddleware = $app->addErrorMiddleware($debug, true, true);
+
+if ($debug) {
+    new \App\Debug\Tracy\ExtensionLoader($app);
+}
 
 $errorMiddleware->setDefaultErrorHandler(
     function (

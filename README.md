@@ -24,6 +24,7 @@ ready to go. Everything is set up so you can start adding your own pages and fea
 - **PHP-DI** — automatically wires up your classes so you don't have to manually create them
 - **Doctrine DBAL** — a tool for running SQL queries safely (not a full ORM, just the query layer)
 - **Twig** — a template system for building HTML pages separate from your PHP code
+- **Session handling** — a simple `App\Util\Session` class wraps PHP's native sessions, injectable via constructor (no superglobals in your code)
 - **Tracy** — a debug bar that shows errors, database queries, and performance info
 - **PHPUnit** — testing framework to make sure your code works
 - **SQLite by default** — uses a file-based database so you don't need to install MySQL or PostgreSQL
