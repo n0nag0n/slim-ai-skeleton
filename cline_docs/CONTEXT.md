@@ -21,7 +21,7 @@ Minimum code that solves the problem. Nothing speculative.
 ### 2. Minimal Dependencies
 
 Every dependency is a liability. Before adding one:
-- Check if `$_ENV`, raw PDO, or a simple function solves it
+- Check if raw PDO or a simple function solves it
 - If you must add a dependency, prefer ones with few transitive deps
 - Never add a framework for something a 10-line function handles
 
@@ -33,7 +33,7 @@ Everything should be traceable. If an AI can't find where something comes from i
 
 - No auto-discovery of routes, middleware, or services
 - No global functions (NO `env()`, no helper files)
-- No implicit configuration — `$_ENV` reads are explicit
+- No superglobals in application code — `$_ENV` only in `config/dependencies.php`, HTTP input through Request object
 - No facades, no service location — constructor injection only
 
 ### 4. Surgical Changes
@@ -149,10 +149,25 @@ return [
 
 ### Environment Variables
 
-Read `$_ENV` directly. No helper functions. No global state.
+`$_ENV` is reserved for boot-time wiring in `config/dependencies.php` only.
+Never use `$_ENV` in controllers, models, services, or templates.
 
 ```php
-$value = $_ENV['KEY'] ?? 'default';
+// config/dependencies.php — OK
+Connection::class => function () {
+    return DriverManager::getConnection([
+        'url' => $_ENV['DATABASE_URL'] ?? 'sqlite:///var/data.sqlite',
+    ]);
+};
+```
+
+For HTTP input (`$_GET`, `$_POST`, `$_SERVER`), use Slim's Request object:
+
+```php
+// src/Controller/ExampleController.php — OK
+$name = $request->getQueryParams()['name'] ?? 'Guest';
+$body = $request->getParsedBody();
+$method = $request->getMethod();
 ```
 
 Tests set `$_ENV` values in `tests/bootstrap.php` before the container is built.
@@ -190,7 +205,7 @@ To add a migration: create `migrations/YYYYMMDD_HHMMSS_description.sql` with raw
 `AGENTS.md` is the source of truth. Copies are mirrored to Claude, Copilot, Gemini, Cursor, Windsurf, Continue, and Cline config files. After editing `AGENTS.md`, run:
 
 ```bash
-composer sync-ai-config
+composer sync-ai-instructions
 ```
 
 ## Testing
