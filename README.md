@@ -1,5 +1,14 @@
 # slim-ai-skeleton
 
+[![PHP Version](https://img.shields.io/packagist/php-v/n0nag0n/slim-ai-skeleton)](https://packagist.org/packages/n0nag0n/slim-ai-skeleton)
+[![Packagist Version](https://img.shields.io/packagist/v/n0nag0n/slim-ai-skeleton)](https://packagist.org/packages/n0nag0n/slim-ai-skeleton)
+[![Packagist Downloads](https://img.shields.io/packagist/dt/n0nag0n/slim-ai-skeleton)](https://packagist.org/packages/n0nag0n/slim-ai-skeleton)
+[![License](https://img.shields.io/github/license/n0nag0n/slim-ai-skeleton)](LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/n0nag0n/slim-ai-skeleton)](https://github.com/n0nag0n/slim-ai-skeleton)
+[![Last Commit](https://img.shields.io/github/last-commit/n0nag0n/slim-ai-skeleton)](https://github.com/n0nag0n/slim-ai-skeleton)
+[![AI Friendly](https://img.shields.io/badge/AI-Friendly-5B5BD7?logo=openai&logoColor=white)](AGENTS.md)
+[![CI](https://img.shields.io/github/actions/workflow/status/n0nag0n/slim-ai-skeleton/ci.yml?branch=main)](.github/workflows/ci.yml)
+
 A starter project for building PHP web apps with the [Slim 4](https://www.slimframework.com/) framework.
 It's designed to work well with AI coding tools (Cursor, Claude Code, Windsurf, etc.) — the code is
 simple, explicit, and easy for both humans and AIs to understand.
