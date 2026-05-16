@@ -17,12 +17,16 @@ class SyncAiInstructions implements CommandInterface
         'cline_docs/CONTEXT.md',
     ];
 
+    public function __construct(private ?string $projectRoot = null)
+    {
+    }
+
     /**
      * @param array<int, string> $args
      */
     public function execute(array $args, Container $container): int
     {
-        $root = dirname(__DIR__, 2);
+        $root = $this->projectRoot ?? dirname(__DIR__, 2);
         $source = $root . '/AGENTS.md';
         $count = 0;
 

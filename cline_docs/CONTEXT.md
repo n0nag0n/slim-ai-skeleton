@@ -114,7 +114,7 @@ public/index.php
 | `src/Util/Pagination.php` | Pagination helper. Computes offset/limit/totalPages from page + perPage. |
 | `src/Console/*.php` | CLI commands. Each implements `CommandInterface`. Registered in `config/console.php`. |
 | `src/Renderer/JsonRenderer.php` | JSON response helper. |
-| `templates/*.twig` | Twix views. `layout.twig` is the base. |
+| `templates/*.twig` | Twig views. `layout.twig` is the base. |
 | `templates/error/*.twig` | Error pages (404, 500). |
 | `tests/TestCase.php` | Base test class. Provides `createApp()` and `createRequest()`. |
 
@@ -394,6 +394,20 @@ Model tests run the actual SQL migrations against an in-memory SQLite database �
 ### Test Configuration
 
 Tests use an in-memory SQLite database configured in `tests/bootstrap.php`. The app boots fresh for each test.
+
+### Testing Philosophy
+
+Tests should be straightforward — no mocking frameworks, no reflection workarounds, no over-engineering.
+
+**Reflection in tests is a code smell.** If you need reflection to access private properties or inject test data, the code wasn't designed for testability. Fix the code instead: add a single optional constructor parameter or a setter. One line, no new abstractions.
+
+**Don't add abstractions just to make things testable.** An interface with one implementation or a filesystem wrapper class is worse than the problem it solves. The line between well-factored and over-engineered is crossed when you add your second class to support a single test. Keep it simple:
+
+- Good: an optional constructor parameter with a natural default
+- OK: a setter used only in tests
+- Too far: extracting interfaces, creating strategy classes, dependency-injecting filesystem wrappers
+
+**Honest integration tests beat fake unit tests.** Commands that write files, run migrations, or touch the network operate on real filesystems and databases. Don't mock those layers — run them against temp directories and in-memory SQLite, then clean up. The tests are slower by microseconds but actually test the real behavior.
 
 After every task, verify nothing is broken:
 ```bash

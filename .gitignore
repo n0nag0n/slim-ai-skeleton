@@ -2,5 +2,6 @@
 /var/database.sqlite
 /var/log/
 /var/cache/
+/tmp/
 .env
 .phpunit*
