@@ -13,7 +13,7 @@ if ($debug) {
     Tracy\Debugger::enable(Tracy\Debugger::Development, $rootPath . '/var/log');
 }
 
-$containerBuilder = new DI\ContainerBuilder;
+$containerBuilder = new DI\ContainerBuilder();
 $containerBuilder->addDefinitions($rootPath . '/config/dependencies.php');
 
 if (!$debug) {
@@ -48,7 +48,10 @@ $errorMiddleware->setDefaultErrorHandler(
         bool $displayErrorDetails,
         bool $logErrors,
         bool $logErrorDetails
-    ) use ($app, $debug) {
+    ) use (
+        $app,
+        $debug
+    ) {
         if ($debug) {
             throw $exception;
         }

@@ -8,7 +8,9 @@ use App\Renderer\JsonRenderer;
 
 class HealthController
 {
-    public function __construct(private JsonRenderer $renderer) {}
+    public function __construct(private JsonRenderer $renderer)
+    {
+    }
 
     public function health(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {

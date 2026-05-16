@@ -1,0 +1,32 @@
+#!/usr/bin/env php
+<?php
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->safeLoad();
+
+$containerBuilder = new DI\ContainerBuilder;
+$containerBuilder->addDefinitions(__DIR__ . '/config/dependencies.php');
+$container = $containerBuilder->build();
+
+$commands = require __DIR__ . '/config/console.php';
+
+$commandName = $argv[1] ?? 'help';
+$args = array_slice($argv, 2);
+
+if (!isset($commands[$commandName])) {
+    echo "Unknown command: {$commandName}\n";
+    echo "Run 'php console help' for a list of available commands.\n";
+    exit(1);
+}
+
+try {
+    $commandClass = $commands[$commandName]['class'];
+    $command = new $commandClass();
+    $exitCode = $command->execute($args, $container);
+    exit($exitCode ?? 0);
+} catch (Throwable $e) {
+    echo "Error: {$e->getMessage()}\n";
+    exit(1);
+}

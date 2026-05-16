@@ -4,6 +4,7 @@ namespace App\Util;
 
 class Session
 {
+    /** @var array<string, mixed> */
     private array $data = [];
     private bool $started = false;
     private bool $modified = false;
@@ -72,6 +73,7 @@ class Session
         $this->modified = true;
     }
 
+    /** @return array<string, mixed> */
     public function all(): array
     {
         $this->start();
@@ -81,7 +83,7 @@ class Session
     public function getId(): string
     {
         $this->start();
-        return session_id();
+        return (string) session_id();
     }
 
     public function regenerate(): void

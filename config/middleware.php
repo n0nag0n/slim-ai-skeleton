@@ -8,6 +8,10 @@ use App\Util\Session;
 return function (App $app) {
     $container = $app->getContainer();
 
+    if ($container === null) {
+        return;
+    }
+
     $app->add(function ($request, $handler) use ($container) {
         $session = $container->get(Session::class);
         $session->start();

@@ -8,7 +8,9 @@ use Slim\Views\Twig;
 
 class HomeController
 {
-    public function __construct(private Twig $twig) {}
+    public function __construct(private Twig $twig)
+    {
+    }
 
     public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {

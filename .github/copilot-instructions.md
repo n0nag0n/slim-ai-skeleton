@@ -26,6 +26,7 @@ Every dependency is a liability. Before adding one:
 - Never add a framework for something a 10-line function handles
 
 Current prod deps: slim, slim/psr7, php-di/slim-bridge, phpdotenv, doctrine/dbal, tracy, slim/twig-view. This is the ceiling, not the floor.
+Dev deps: phpunit, phpstan, phpcs.
 
 ### 3. No Magic
 
@@ -53,6 +54,7 @@ Transform every task into verifiable goals.
 - "Add validation" → "Write tests for invalid inputs, then make them pass"
 - "Fix the bug" → "Write a test that reproduces it, then make it pass"
 - "Refactor X" → "Ensure tests pass before and after"
+- "Build new code" → "Write tests for the new behavior, then make them pass"
 
 State your plan before executing:
 ```
@@ -79,6 +81,9 @@ public/index.php
   → creates Slim app via DI\Bridge\Slim\Bridge
   → applies middleware from config/middleware.php
   → registers routes from config/routes.php
+  → adds TracyMiddleware (debug only) — captures request/response for panels
+  → adds RoutingMiddleware + BodyParsingMiddleware
+  → registers Tracy panels via ExtensionLoader (debug only)
   → sets up error handler (content-negotiated)
   → runs
 ```
@@ -90,13 +95,22 @@ public/index.php
 | `public/index.php` | Front controller. Bootstraps everything. |
 | `config/dependencies.php` | All DI definitions in one file. |
 | `config/routes.php` | ALL routes in one file. Add new routes here. |
-| `config/middleware.php` | Middleware stack. Currently: TwigMiddleware. |
+| `config/middleware.php` | Middleware stack. TwigMiddleware + app middleware. |
 | `migrations/*.sql` | Timestamped SQL files. Run via `php migrate`. |
+| `config/console.php` | CLI command definitions. Add new commands here. |
 | `src/Controller/*.php` | Request handlers. Each method receives `Request` + returns `Response`. |
 | `src/Model/*.php` | DBAL query wrappers. Constructor-inject `Connection`. |
+| `src/Debug/TracyMiddleware.php` | Captures PSR-7 request/response into static props for Tracy panels. |
+| `src/Debug/DbalQueryLogger.php` | DBAL Driver Middleware — captures query timing/SQL/params for the database panel. |
+| `src/Debug/DbalQueries.php` | Query data container shared between DbalQueryLogger and DatabasePanel. |
+| `src/Debug/Tracy/*.php` | Tracy bar panels: Request, Response, Routes, Session, Database. |
 | `src/Util/*.php` | Utility classes. Pure logic, no HTTP or DB dependencies. |
+| `src/Util/Session.php` | Session wrapper. Inject into controllers/services instead of using `$_SESSION`. |
+| `src/Util/Validator.php` | Validation utility. Method-chaining with `required()`, `email()`, `minLength()`, etc. |
+| `src/Util/Pagination.php` | Pagination helper. Computes offset/limit/totalPages from page + perPage. |
+| `src/Console/*.php` | CLI commands. Each implements `CommandInterface`. Registered in `config/console.php`. |
 | `src/Renderer/JsonRenderer.php` | JSON response helper. |
-| `templates/*.twig` | Twig views. `layout.twig` is the base. |
+| `templates/*.twig` | Twix views. `layout.twig` is the base. |
 | `templates/error/*.twig` | Error pages (404, 500). |
 | `tests/TestCase.php` | Base test class. Provides `createApp()` and `createRequest()`. |
 
@@ -127,12 +141,12 @@ public/index.php
    ```
 3. Create `templates/example.twig`.
 4. Write a test in `tests/Controller/ExampleControllerTest.php`.
-5. Run `composer test`.
+5. Run `composer lint && composer stan && composer test`.
 
 ### Adding a Database Query
 
 1. Add the method to an existing Model or create `src/Model/YourModel.php`.
-2. Extend `tests/Model/YourModelTest.php` from `App\Test\TestCase`.
+2. Write test methods in `tests/Model/YourModelTest.php` (extending `App\Test\TestCase`) that insert test data and assert on the query results.
 
 ### Adding a Utility Class
 
@@ -152,19 +166,102 @@ class Slugger
 
 No corresponding test is required — test utilities only if they have non-trivial logic.
 
-### Dependency Injection
+### Using Sessions
 
-PHP-DI autowires constructors automatically. Register explicit definitions only when you need a factory:
+Inject `App\Util\Session` via constructor. The session is auto-started by middleware before controllers run.
 
 ```php
-// config/dependencies.php
-return [
-    YourService::class => DI\autowire(),  // auto — only if constructor needs nothing special
-    Connection::class => function () {    // factory — when you need runtime config
-        // ... build connection from $_ENV
-    },
-];
+class SomeController
+{
+    public function __construct(private \App\Util\Session $session) {}
+
+    public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $this->session->set('user_id', 42);
+        $userId = $this->session->get('user_id');
+        $this->session->delete('user_id');
+        $this->session->regenerate();
+        // ...
+    }
+}
 ```
+
+Available methods: `get()`, `set()`, `delete()`, `has()`, `clear()`, `all()`, `getId()`, `regenerate()`, `destroy()`, `start()`.
+
+Never use `$_SESSION` directly in application code — always inject `Session`.
+
+### Flash Messages
+
+Flash messages survive for exactly one request (set in one request, read on the next). Use them for form submission feedback:
+
+```php
+// Set after a successful form submission (in a POST handler)
+$this->flash->set('success', 'Post created successfully.');
+
+// Redirect, then read on the next request (in the GET handler)
+$message = $this->flash->get('success'); // auto-deleted after read
+
+if ($this->flash->has('error')) {
+    $error = $this->flash->get('error');
+}
+```
+
+Inject `App\Util\Flash` via constructor. It wraps `Session` internally. Available methods: `set(key, value)`, `get(key, default)`, `has(key)`.
+
+### Validation
+
+Use `App\Util\Validator` for input validation. Method-chaining, no magic:
+
+```php
+use App\Util\Validator;
+
+$v = new Validator($request->getParsedBody(), [
+    'email' => 'Email address',
+]);
+
+$v->required('name', 'email', 'password');
+$v->email('email');
+$v->minLength('password', 8);
+$v->maxLength('name', 255);
+$v->matches('password', 'password_confirm');
+$v->numeric('age');
+$v->inArray('role', ['admin', 'user']);
+$v->url('website');
+
+if ($v->fails()) {
+    $errors = $v->getErrors();    // ['email' => ['Email address is required.']]
+    $first = $v->getFirstError(); // 'Email address is required.'
+    return $this->renderer->render($response, ['errors' => $errors], 422);
+}
+```
+
+All methods return `$this` for chaining. Error messages use the field labels passed in the constructor.
+
+### Pagination
+
+Use `App\Util\Pagination` for list endpoints. It computes offset/limit for SQL queries:
+
+```php
+use App\Util\Pagination;
+
+$page = (int) ($request->getQueryParams()['page'] ?? 1);
+$perPage = (int) ($request->getQueryParams()['per_page'] ?? 20);
+
+$totalItems = $this->conn->fetchOne('SELECT COUNT(*) FROM posts');
+$pagination = new Pagination($totalItems, $page, $perPage);
+
+$posts = $this->conn->fetchAllAssociative(
+    'SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?',
+    [$pagination->getLimit(), $pagination->getOffset()]
+);
+
+return $this->renderer->render($response, [
+    'data' => $posts,
+    'pagination' => $pagination->toArray(),
+]);
+```
+
+`toArray()` returns: `page`, `per_page`, `total_items`, `total_pages`, `has_previous`, `has_next`.
 
 ### Environment Variables
 
@@ -200,11 +297,6 @@ The error handler in `public/index.php`:
 
 When curling the dev server for debugging, DON'T parse the HTML output. If you need to check an error response in production mode, set `DEBUG_MODE=false` in `.env` and use `curl -H "Accept: application/json"`.
 
-### Models vs. Controllers
-
-- **Controllers** handle HTTP — parsing requests, calling models, returning responses.
-- **Models** handle data — SQL queries via DBAL `Connection`. They never touch HTTP.
-
 ### Migrations
 
 Migrations are timestamped SQL files in `migrations/`. Run them with:
@@ -218,6 +310,29 @@ composer migrate
 The runner tracks executed migrations in a `_migrations` table. SQLite by default.
 
 To add a migration: create `migrations/YYYYMMDD_HHMMSS_description.sql` with raw SQL.
+
+### CLI Commands
+
+The project includes a CLI framework at `php console`. Commands are registered in `config/console.php`:
+
+```bash
+php console help                    # List all commands
+php console make:controller <Name>  # Scaffold controller + test
+php console make:model <Name>       # Scaffold model + migration + test
+php console make:migration <desc>   # Create a blank migration file
+php console cache:clear             # Clear Twig/DI cache
+php console route:list              # Show registered routes
+php console sync-ai-instructions    # Sync AGENTS.md to all AI configs
+```
+
+To add a new command:
+
+1. Create `src/Console/YourCommand.php` implementing `App\Console\CommandInterface`.
+2. Register it in `config/console.php`:
+   ```php
+   'your:command' => ['class' => YourCommand::class, 'description' => 'What it does'],
+   ```
+3. The `execute()` method receives `(array $args, Container $container)` and returns an int exit code.
 
 ### Syncing AI Configs
 
@@ -279,9 +394,6 @@ Tests use an in-memory SQLite database configured in `tests/bootstrap.php`. The 
 ## What I Care About (Selfish Requests)
 
 1. **Flat files, not folders.** I find things faster in a shallow tree.
-2. **One convention per concept.** If there's a Model pattern, everything is a Model. Don't mix Repository and Model.
-3. **Don't make me search for routes.** Single file. No glob-based discovery, no route attributes on controllers.
-4. **Explicit DI.** I want to see what services exist without grepping the entire src/ tree.
-5. **Tests I can copy-paste.** A good test file is a template for the next 20 tests I'll write.
-6. **DBAL, not raw PDO.** Named parameters, query builder, schema introspection — I know this API well.
-7. **JSON for debugging.** When you curl the server, use `application/json` accept header. HTML error pages are massive and full of JS/CSS noise.
+2. **Tests I can copy-paste.** A good test file is a template for the next 20 tests I'll write. `tests/Model/PostTest.php` is the model test template.
+3. **DBAL, not raw PDO.** Named parameters, query builder, schema introspection — I know this API well.
+4. **JSON for debugging.** When you curl the server, use `application/json` accept header. HTML error pages are massive and full of JS/CSS noise.

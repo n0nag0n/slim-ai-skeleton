@@ -4,6 +4,7 @@ use Doctrine\DBAL\DriverManager;
 use App\Renderer\JsonRenderer;
 use App\Model\Post;
 use App\Util\Session;
+use App\Util\Flash;
 use Doctrine\DBAL\Connection;
 use Slim\Views\Twig;
 use Doctrine\DBAL\Configuration;
@@ -11,6 +12,7 @@ use App\Debug\DbalQueryLogger;
 
 return [
     Session::class => DI\autowire(),
+    Flash::class => DI\autowire(),
 
     Connection::class => function () {
         $debug = filter_var($_ENV['DEBUG_MODE'] ?? false, FILTER_VALIDATE_BOOLEAN);
