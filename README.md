@@ -37,6 +37,7 @@ Visit `http://localhost:8080`.
 | `composer start` | Start dev server on port 8080 |
 | `composer test` | Run PHPUnit tests |
 | `composer migrate` | Run pending migrations |
+| `composer sync-ai-instructions` | Sync AGENTS.md to AI tool configs |
 
 ## Environment
 
