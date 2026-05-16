@@ -23,6 +23,7 @@ return [
                 'dbname' => $_ENV['DB_NAME'] ?? 'app',
                 'user' => $_ENV['DB_USER'] ?? 'root',
                 'password' => $_ENV['DB_PASS'] ?? '',
+                'charset' => $_ENV['DB_CHARSET'] ?? 'utf8mb4',
             ],
         };
         return DriverManager::getConnection($params);

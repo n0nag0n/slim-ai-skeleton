@@ -5,3 +5,30 @@ services:
       - "8080:8080"
     volumes:
       - .:/app
+    environment:
+      - DB_DRIVER=${DB_DRIVER:-pdo_sqlite}
+      - DB_PATH=${DB_PATH:-var/database.sqlite}
+
+  # mariadb:
+  #   image: mariadb:11
+  #   ports:
+  #     - "3306:3306"
+  #   environment:
+  #     MARIADB_DATABASE: app
+  #     MARIADB_ROOT_PASSWORD: secret
+  #   volumes:
+  #     - db_data:/var/lib/mysql
+
+  # postgres:
+  #   image: postgres:17-alpine
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     POSTGRES_DB: app
+  #     POSTGRES_USER: app
+  #     POSTGRES_PASSWORD: secret
+  #   volumes:
+  #     - db_data:/var/lib/postgresql/data
+
+# volumes:
+#   db_data:

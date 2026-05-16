@@ -1,0 +1,7 @@
+.env
+.git
+.idea
+vendor/
+var/cache/
+var/log/
+var/database.sqlite
