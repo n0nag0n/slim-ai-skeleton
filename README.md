@@ -18,7 +18,7 @@ simple, explicit, and easy for both humans and AIs to understand.
 A working web app out of the box — it serves a homepage, a health-check endpoint, and has a database
 ready to go. Everything is set up so you can start adding your own pages and features immediately.
 
-## Features (plain English)
+## Features
 
 - **Slim 4** — a lightweight PHP framework for handling web requests and responses
 - **PHP-DI** — automatic dependency injection container
