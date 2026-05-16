@@ -229,10 +229,12 @@ composer sync-ai-instructions
 
 ## Testing
 
-Base test class: `tests/TestCase.php`
+Base test class: `tests/TestCase.php` — provides `createApp()`, `createRequest()`, and `runMigrations()`.
+
+### Testing Controllers
 
 ```php
-class YourTest extends TestCase
+class YourControllerTest extends TestCase
 {
     public function testSomething(): void
     {
@@ -243,6 +245,34 @@ class YourTest extends TestCase
     }
 }
 ```
+
+Controller tests don't need the database — mock models or test endpoints that don't touch the DB.
+
+### Testing Models
+
+```php
+class YourModelTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        $this->app = $this->createApp();
+        $this->conn = $this->app->getContainer()->get(Connection::class);
+        $this->runMigrations();
+    }
+
+    public function testFindAll(): void
+    {
+        $this->conn->insert('posts', ['title' => 'Test', 'body' => 'Hello']);
+        $model = new Post($this->conn);
+        $results = $model->findAll();
+        $this->assertCount(1, $results);
+    }
+}
+```
+
+Model tests run the actual SQL migrations against an in-memory SQLite database — no schema duplication, queries are tested against real data.
+
+### Test Configuration
 
 Tests use an in-memory SQLite database configured in `tests/bootstrap.php`. The app boots fresh for each test.
 
