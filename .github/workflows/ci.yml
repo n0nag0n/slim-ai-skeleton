@@ -27,6 +27,6 @@ jobs:
 
       - run: composer stan
 
-      - run: php migrate
+      - run: composer migrate
 
       - run: composer test
