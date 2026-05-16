@@ -94,6 +94,7 @@ public/index.php
 | `migrations/*.sql` | Timestamped SQL files. Run via `php migrate`. |
 | `src/Controller/*.php` | Request handlers. Each method receives `Request` + returns `Response`. |
 | `src/Model/*.php` | DBAL query wrappers. Constructor-inject `Connection`. |
+| `src/Util/*.php` | Utility classes. Pure logic, no HTTP or DB dependencies. |
 | `src/Renderer/JsonRenderer.php` | JSON response helper. |
 | `templates/*.twig` | Twig views. `layout.twig` is the base. |
 | `templates/error/*.twig` | Error pages (404, 500). |
@@ -132,6 +133,24 @@ public/index.php
 
 1. Add the method to an existing Model or create `src/Model/YourModel.php`.
 2. Extend `tests/Model/YourModelTest.php` from `App\Test\TestCase`.
+
+### Adding a Utility Class
+
+Pure logic that doesn't touch HTTP or the database goes in `src/Util/`. Utility classes are plain PHP with no framework dependencies and should be stateless or constructed with simple values.
+
+```php
+namespace App\Util;
+
+class Slugger
+{
+    public function slugify(string $text): string
+    {
+        return strtolower(trim(preg_replace('/[^a-zA-Z0-9]+/', '-', $text), '-'));
+    }
+}
+```
+
+No corresponding test is required — test utilities only if they have non-trivial logic.
 
 ### Dependency Injection
 

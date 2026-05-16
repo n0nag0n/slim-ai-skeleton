@@ -111,6 +111,7 @@ Here's how to add a new page at `/hello`:
 ├── src/
 │   ├── Controller/          # Request handlers — one file per page or feature
 │   ├── Model/               # Database query code
+│   ├── Util/                # Utility classes — pure logic, no HTTP or DB
 │   └── Renderer/            # Response helpers (e.g., JSON)
 ├── templates/               # Twig HTML templates
 │   └── error/               # Error pages (404, 500)
