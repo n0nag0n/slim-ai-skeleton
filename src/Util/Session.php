@@ -11,6 +11,21 @@ class Session
     private bool $started = false;
     private bool $modified = false;
 
+    public function __construct()
+    {
+        if (session_status() === PHP_SESSION_NONE && PHP_SAPI !== 'cli') {
+            session_name('slm_sess');
+            session_set_cookie_params([
+                'lifetime' => 0,
+                'path' => '/',
+                'domain' => '',
+                'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]);
+        }
+    }
+
     public function start(): void
     {
         if ($this->started) {

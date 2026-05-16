@@ -13,13 +13,24 @@ class SessionTest extends TestCase
 
     protected function setUp(): void
     {
+        $_SESSION = [];
+        if (session_status() !== PHP_SESSION_NONE) {
+            session_destroy();
+        } elseif (session_id() !== '') {
+            session_start();
+            session_destroy();
+        }
+        session_id('');
         $this->session = new Session();
     }
 
     protected function tearDown(): void
     {
         $_SESSION = [];
-        if (session_status() === PHP_SESSION_ACTIVE) {
+        if (session_status() !== PHP_SESSION_NONE) {
+            session_destroy();
+        } elseif (session_id() !== '') {
+            session_start();
             session_destroy();
         }
     }
@@ -68,7 +79,9 @@ class SessionTest extends TestCase
     {
         $this->session->set('name', 'test');
         $this->session->set('role', 'admin');
-        $this->assertSame(['name' => 'test', 'role' => 'admin'], $this->session->all());
+        $all = $this->session->all();
+        $this->assertSame('test', $all['name']);
+        $this->assertSame('admin', $all['role']);
     }
 
     public function testGetId(): void

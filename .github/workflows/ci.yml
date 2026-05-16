@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php: ['8.2', '8.3', '8.4']
+        php: ['8.2', '8.3', '8.4', '8.5']
 
     steps:
       - uses: actions/checkout@v4
@@ -22,6 +22,10 @@ jobs:
           extensions: pdo_sqlite
 
       - run: composer install --no-progress --no-interaction
+
+      - run: composer lint
+
+      - run: composer stan
 
       - run: php migrate
 

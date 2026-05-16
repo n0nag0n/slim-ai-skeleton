@@ -7,14 +7,24 @@ use App\Renderer\JsonRenderer;
 use App\Model\Post;
 use App\Util\Session;
 use App\Util\Flash;
+use App\Util\Csrf;
 use Doctrine\DBAL\Connection;
 use Slim\Views\Twig;
 use Doctrine\DBAL\Configuration;
 use App\Debug\DbalQueryLogger;
+use App\Security\CsrfMiddleware;
+use App\Security\CorsMiddleware;
 
 return [
     Session::class => DI\autowire(),
     Flash::class => DI\autowire(),
+    Csrf::class => DI\autowire(),
+    CsrfMiddleware::class => DI\autowire(),
+
+    CorsMiddleware::class => function () {
+        $default = 'http://localhost:8080,http://localhost:5173,http://localhost:4200,http://127.0.0.1:8080';
+        return new CorsMiddleware(explode(',', $_ENV['ALLOWED_ORIGINS'] ?? $default));
+    },
 
     Connection::class => function () {
         $debug = filter_var($_ENV['DEBUG_MODE'] ?? false, FILTER_VALIDATE_BOOLEAN);

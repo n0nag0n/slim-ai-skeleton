@@ -37,6 +37,9 @@ if ($debug) {
 $app->addRoutingMiddleware();
 $app->addBodyParsingMiddleware();
 
+// CSRF must run after body parsing so it can read form data
+$app->add(\App\Security\CsrfMiddleware::class);
+
 $errorMiddleware = $app->addErrorMiddleware($debug, true, true);
 
 if ($debug) {
@@ -45,22 +48,35 @@ if ($debug) {
 
 $errorMiddleware->setDefaultErrorHandler(
     function (
-        $request,
+        Psr\Http\Message\ServerRequestInterface $request,
         Throwable $exception,
         bool $displayErrorDetails,
         bool $logErrors,
         bool $logErrorDetails
     ) use (
-        $app,
-        $debug
+        $app
     ) {
-        if ($debug) {
+        if ($displayErrorDetails) {
             throw $exception;
         }
 
         $code = $exception instanceof \Slim\Exception\HttpException
             ? $exception->getCode()
             : 500;
+
+        if ($code < 400 || $code > 599) {
+            $code = 500;
+        }
+
+        if ($logErrors) {
+            error_log(sprintf(
+                '[%s] %s in %s:%d',
+                (new DateTimeImmutable())->format('Y-m-d H:i:s'),
+                $exception->getMessage(),
+                $exception->getFile(),
+                $exception->getLine()
+            ));
+        }
 
         $accept = $request->getHeaderLine('Accept');
 
@@ -76,15 +92,17 @@ $errorMiddleware->setDefaultErrorHandler(
 
             return $twig->render(
                 $app->getResponseFactory()->createResponse(500),
-                'error/500.twig',
-                ['message' => $exception->getMessage()]
+                'error/500.twig'
             );
         }
 
+        $body = json_encode(['error' => 'Internal Server Error']);
+        if ($body === false) {
+            $body = '{"error":"Internal Server Error"}';
+        }
+
         $response = $app->getResponseFactory()->createResponse($code);
-        $response->getBody()->write(json_encode([
-            'error' => $exception->getMessage(),
-        ]));
+        $response->getBody()->write($body);
         return $response->withHeader('Content-Type', 'application/json');
     }
 );
