@@ -25,8 +25,14 @@ ready to go. Everything is set up so you can start adding your own pages and fea
 - **Doctrine DBAL** — a tool for running SQL queries safely (not a full ORM, just the query layer)
 - **Twig** — a template system for building HTML pages separate from your PHP code
 - **Session handling** — a simple `App\Util\Session` class wraps PHP's native sessions, injectable via constructor (no superglobals in your code)
-- **Tracy** — a debug bar that shows errors, database queries, and performance info
+- **Flash messages** — one-request survival messages for form submission feedback via `App\Util\Flash`
+- **Validation** — method-chaining input validation with `App\Util\Validator` (required, email, length, matches, etc.)
+- **Pagination** — offset/limit calculator with `App\Util\Pagination` for list endpoints
+- **CLI console** — `php console` with commands to scaffold controllers, models, migrations, and more
+- **Tracy** — a debug bar with panels for requests, responses, routes, sessions, and database queries
 - **PHPUnit** — testing framework to make sure your code works
+- **PHPStan** — static analysis to catch bugs before runtime
+- **PHP_CodeSniffer** — enforces consistent code style
 - **SQLite by default** — uses a file-based database so you don't need to install MySQL or PostgreSQL
 
 ## How AI fits in
@@ -64,7 +70,11 @@ Open `http://localhost:8080` in your browser. You should see the homepage.
 |---------|-------------|
 | `composer start` | Start the development server on port 8080 |
 | `composer test` | Run all tests |
-| `php migrate` | Run pending database migrations |
+| `composer lint` | Check code style with PHP_CodeSniffer |
+| `composer stan` | Run PHPStan static analysis |
+| `composer cs-fix` | Auto-fix code style issues |
+| `composer migrate` | Run pending database migrations |
+| `php console` | List all CLI commands (scaffolding, cache, routes) |
 | `composer sync-ai-instructions` | Sync AGENTS.md to AI tool config files |
 
 ## Your first new page
@@ -112,23 +122,29 @@ Here's how to add a new page at `/hello`:
 
 ```
 ├── config/
-│   ├── dependencies.php     # Where services are registered (rarely edit this)
-│   ├── middleware.php        # Middleware stack (runs on every request)
-│   └── routes.php           # ALL routes in one file — add new pages here
-├── migrations/              # Database migration files (SQL)
+│   ├── console.php           # CLI command definitions
+│   ├── dependencies.php      # Where services are registered (rarely edit this)
+│   ├── middleware.php         # Middleware stack (runs on every request)
+│   └── routes.php            # ALL routes in one file — add new pages here
+├── migrations/               # Database migration files (SQL)
 ├── public/
-│   └── index.php            # Entry point — every request goes through here
+│   └── index.php             # Entry point — every request goes through here
 ├── src/
-│   ├── Controller/          # Request handlers — one file per page or feature
-│   ├── Model/               # Database query code
-│   ├── Util/                # Utility classes — pure logic, no HTTP or DB
-│   └── Renderer/            # Response helpers (e.g., JSON)
-├── templates/               # Twig HTML templates
-│   └── error/               # Error pages (404, 500)
-└── tests/                   # PHPUnit tests
+│   ├── Console/              # CLI commands (scaffolding, cache, routes)
+│   ├── Controller/           # Request handlers — one file per page or feature
+│   ├── Debug/                # Tracy debug panels and query logging
+│   ├── Model/                # Database query code
+│   ├── Renderer/             # Response helpers (e.g., JSON)
+│   └── Util/                 # Utility classes — Sessions, Flash, Validation, Pagination
+├── templates/                # Twig HTML templates
+│   └── error/                # Error pages (404, 500)
+└── tests/                    # PHPUnit tests
     ├── bootstrap.php
-    ├── TestCase.php         # Base test your tests extend from
-    └── Controller/
+    ├── TestCase.php          # Base test your tests extend from
+    ├── Controller/
+    ├── Model/
+    ├── Renderer/
+    └── Util/
 ```
 
 ## Environment Variables
