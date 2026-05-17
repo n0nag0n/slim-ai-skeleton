@@ -122,10 +122,20 @@ public/index.php
 
 ### Adding a New Route
 
-1. Add the route to `config/routes.php`:
+1. Add the route to `config/routes.php` — flat or grouped:
    ```php
+   // Flat route
    $app->get('/example', [ExampleController::class, 'index']);
+
+   // Route with URL placeholder (see step 2 for signature)
    $app->get('/example/{id}', [ExampleController::class, 'show']);
+
+   // Grouped routes share a prefix and can have per-group middleware
+   use Slim\Routing\RouteCollectorProxy;
+   $app->group('/api', function (RouteCollectorProxy $api) {
+       $api->get('/resources', [ExampleController::class, 'index']);
+       $api->get('/resources/{id}', [ExampleController::class, 'show']);
+   });
    ```
 2. Create `src/Controller/ExampleController.php`:
    ```php
