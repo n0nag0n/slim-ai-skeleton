@@ -7,10 +7,20 @@ namespace App\Model;
 use Doctrine\DBAL\Connection;
 
 /**
- * Sample model demonstrating the DBAL query pattern.
- * Copy this class and rename for new models.
+ * Example model demonstrating the DBAL query pattern.
+ *
+ * Table: posts
+ * Columns:
+ *   - id:         int (auto-increment primary key)
+ *   - title:      string(255), NOT NULL
+ *   - body:       text, NOT NULL
+ *   - created_at: datetime, default CURRENT_TIMESTAMP
+ *   - updated_at: datetime, default CURRENT_TIMESTAMP
+ *
+ * Copy this class and rename for new models. Update the table name
+ * and column docs to match your migration.
  */
-class Post
+class ExampleModel
 {
     public function __construct(private Connection $conn)
     {

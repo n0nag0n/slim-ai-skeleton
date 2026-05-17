@@ -7,7 +7,7 @@ namespace App\Test\Model;
 use App\Test\TestCase;
 use Doctrine\DBAL\Connection;
 
-class PostTest extends TestCase
+class ExampleModelTest extends TestCase
 {
     protected Connection $conn;
 
@@ -15,7 +15,13 @@ class PostTest extends TestCase
     {
         $app = $this->createApp();
         $this->conn = $app->getContainer()->get(Connection::class);
-        $this->runMigrations();
+        $this->conn->executeStatement('CREATE TABLE posts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title VARCHAR(255) NOT NULL,
+            body TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )');
     }
 
     public function testCreateAndFindAll(): void

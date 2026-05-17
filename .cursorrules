@@ -100,7 +100,7 @@ public/index.php
 | `config/dependencies.php` | All DI definitions in one file. |
 | `config/routes.php` | ALL routes in one file. Add new routes here. |
 | `config/middleware.php` | Middleware stack. TwigMiddleware + app middleware. |
-| `migrations/*.sql` | Timestamped SQL files. Run via `php migrate`. |
+| `migrations/*.sql` | Timestamped SQL files (example files use .sql.example suffix). Run via `php migrate`. |
 | `config/console.php` | CLI command definitions. Add new commands here. |
 | `src/Controller/*.php` | Request handlers. Each method receives `Request` + returns `Response`. |
 | `src/Model/*.php` | DBAL query wrappers. Constructor-inject `Connection`. |
@@ -439,7 +439,7 @@ composer lint && composer stan && composer test
 ## What I Care About (Selfish Requests)
 
 1. **Flat files, not folders.** I find things faster in a shallow tree.
-2. **Tests I can copy-paste.** A good test file is a template for the next 20 tests I'll write. `tests/Model/PostTest.php` is the model test template.
+2. **Tests I can copy-paste.** A good test file is a template for the next 20 tests I'll write. `tests/Model/ExampleModelTest.php` is the model test template.
 3. **DBAL, not raw PDO.** Named parameters, query builder, schema introspection — I know this API well.
 4. **JSON for debugging.** When you curl the server, use `application/json` accept header. HTML error pages are massive and full of JS/CSS noise.
 
