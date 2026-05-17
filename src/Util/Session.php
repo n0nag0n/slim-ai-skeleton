@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Util;
 
-class Session
+class Session implements SessionInterface
 {
     /** @var array<string, mixed> */
     private array $data = [];

@@ -6,7 +6,7 @@ namespace App\Util;
 
 class Flash
 {
-    public function __construct(private Session $session)
+    public function __construct(private SessionInterface $session)
     {
     }
 

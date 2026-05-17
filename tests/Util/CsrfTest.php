@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Test\Util;
 
+use App\Util\ArraySession;
 use App\Util\Csrf;
-use App\Util\Session;
 use PHPUnit\Framework\TestCase;
 
 class CsrfTest extends TestCase
@@ -14,13 +14,7 @@ class CsrfTest extends TestCase
 
     protected function setUp(): void
     {
-        $_SESSION = [];
-        $this->csrf = new Csrf(new Session());
-    }
-
-    protected function tearDown(): void
-    {
-        $_SESSION = [];
+        $this->csrf = new Csrf(new ArraySession());
     }
 
     public function testGenerateReturnsToken(): void

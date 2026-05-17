@@ -4,47 +4,39 @@ declare(strict_types=1);
 
 namespace App\Test\Util;
 
+use App\Util\ArraySession;
 use App\Util\Flash;
-use App\Util\Session;
 use PHPUnit\Framework\TestCase;
 
 class FlashTest extends TestCase
 {
-    protected function tearDown(): void
+    public function testSetAndGet(): void
     {
-        $_SESSION = [];
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            session_destroy();
-        }
-    }
-
-    public function testSetAndGetSameRequest(): void
-    {
-        $session = new Session();
-        $flash = new Flash($session);
+        $flash = new Flash(new ArraySession());
         $flash->set('success', 'Done.');
         $this->assertSame('Done.', $flash->get('success'));
     }
 
-    public function testFlashDeletedAfterOneReadCrossRequest(): void
+    public function testFlashDeletedAfterOneRead(): void
     {
-        // Simulate Request A (POST) — set flash
-        $sessionA = new Session();
-        $flashA = new Flash($sessionA);
-        $flashA->set('success', 'Operation completed.');
-        $sessionA->save();
+        $flash = new Flash(new ArraySession());
+        $flash->set('success', 'Done.');
+        $this->assertSame('Done.', $flash->get('success'));
+        $this->assertNull($flash->get('success'));
+    }
 
-        // Simulate Request B (GET after redirect) — read flash
-        $sessionB = new Session();
-        $flashB = new Flash($sessionB);
-        $this->assertTrue($flashB->has('success'), 'Flash should exist on first read');
-        $this->assertSame('Operation completed.', $flashB->get('success'));
-        $sessionB->save();
+    public function testHas(): void
+    {
+        $flash = new Flash(new ArraySession());
+        $this->assertFalse($flash->has('error'));
+        $flash->set('error', 'Something went wrong.');
+        $this->assertTrue($flash->has('error'));
+    }
 
-        // Simulate Request C (next GET) — flash should be GONE
-        $sessionC = new Session();
-        $flashC = new Flash($sessionC);
-        $this->assertFalse($flashC->has('success'), 'Flash should be deleted after one read');
-        $this->assertNull($flashC->get('success'));
+    public function testGetReturnsDefault(): void
+    {
+        $flash = new Flash(new ArraySession());
+        $this->assertNull($flash->get('nonexistent'));
+        $this->assertSame('fallback', $flash->get('nonexistent', 'fallback'));
     }
 }

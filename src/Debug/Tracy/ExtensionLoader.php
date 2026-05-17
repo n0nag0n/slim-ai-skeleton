@@ -18,7 +18,7 @@ class ExtensionLoader
         $bar->addPanel(new RequestPanel);
         $bar->addPanel(new ResponsePanel);
         $bar->addPanel(new RoutesPanel($app));
-        $bar->addPanel(new SessionPanel($app->getContainer()->get(\App\Util\Session::class)));
+        $bar->addPanel(new SessionPanel($app->getContainer()->get(\App\Util\SessionInterface::class)));
         $bar->addPanel(new DatabasePanel);
     }
 }

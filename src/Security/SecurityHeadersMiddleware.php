@@ -11,11 +11,17 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 class SecurityHeadersMiddleware implements MiddlewareInterface
 {
+    public function __construct(private bool $debug = false)
+    {
+    }
+
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $response = $handler->handle($request);
 
-        $csp = "default-src 'self'; script-src 'self';"
+        $scriptSrc = $this->debug ? "'self' 'unsafe-inline'" : "'self'";
+
+        $csp = "default-src 'self'; script-src {$scriptSrc};"
             . " style-src 'self' 'unsafe-inline';"
             . " img-src 'self' data:; font-src 'self';"
             . " form-action 'self'; frame-ancestors 'none'";

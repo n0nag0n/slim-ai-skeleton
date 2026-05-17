@@ -2,11 +2,11 @@
 
 namespace App\Debug\Tracy;
 
-use App\Util\Session;
+use App\Util\SessionInterface;
 
 class SessionPanel extends ExtensionBase implements \Tracy\IBarPanel
 {
-    public function __construct(private Session $session) {}
+    public function __construct(private SessionInterface $session) {}
 
     public function getTab(): string
     {

@@ -8,7 +8,7 @@ class Csrf
 {
     private const TOKEN_KEY = '_csrf_token';
 
-    public function __construct(private Session $session)
+    public function __construct(private SessionInterface $session)
     {
     }
 

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Test\Security;
 
 use App\Security\CsrfMiddleware;
+use App\Util\ArraySession;
 use App\Util\Csrf;
-use App\Util\Session;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -21,15 +21,8 @@ class CsrfMiddlewareTest extends TestCase
 
     protected function setUp(): void
     {
-        $_SESSION = [];
-        $session = new Session();
-        $this->csrf = new Csrf($session);
+        $this->csrf = new Csrf(new ArraySession());
         $this->middleware = new CsrfMiddleware($this->csrf);
-    }
-
-    protected function tearDown(): void
-    {
-        $_SESSION = [];
     }
 
     public function testGetPassesThrough(): void

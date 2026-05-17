@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Doctrine\DBAL\DriverManager;
 use App\Renderer\JsonRenderer;
 use App\Model\Post;
+use App\Util\SessionInterface;
 use App\Util\Session;
 use App\Util\Flash;
 use App\Util\Csrf;
@@ -16,6 +17,7 @@ use App\Security\CsrfMiddleware;
 use App\Security\CorsMiddleware;
 
 return [
+    SessionInterface::class => DI\autowire(Session::class),
     Session::class => DI\autowire(),
     Flash::class => DI\autowire(),
     Csrf::class => DI\autowire(),
@@ -27,14 +29,25 @@ return [
     },
 
     Connection::class => function () {
+        static $connection = null;
+
+        if ($connection !== null) {
+            return $connection;
+        }
+
         $debug = filter_var($_ENV['DEBUG_MODE'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $driver = $_ENV['DB_DRIVER'] ?? 'pdo_sqlite';
         $root = dirname(__DIR__);
+        $dbPath = $_ENV['DB_PATH'] ?? '/var/database.sqlite';
+
+        if ($dbPath !== ':memory:' && !str_starts_with($dbPath, '/')) {
+            $dbPath = $root . '/' . $dbPath;
+        }
 
         $params = match ($driver) {
             'pdo_sqlite' => [
                 'driver' => 'pdo_sqlite',
-                'path' => $_ENV['DB_PATH'] ?? $root . '/var/database.sqlite',
+                'path' => $dbPath,
             ],
             default => [
                 'driver' => $driver,
@@ -50,10 +63,12 @@ return [
         if ($debug) {
             $config = new Configuration();
             $config->setMiddlewares([new DbalQueryLogger()]);
-            return DriverManager::getConnection($params, $config);
+            $connection = DriverManager::getConnection($params, $config);
+            return $connection;
         }
 
-        return DriverManager::getConnection($params);
+        $connection = DriverManager::getConnection($params);
+        return $connection;
     },
 
     Twig::class => function () {

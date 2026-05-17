@@ -13,26 +13,19 @@ class SessionTest extends TestCase
 
     protected function setUp(): void
     {
+        @session_start();
         $_SESSION = [];
-        if (session_status() !== PHP_SESSION_NONE) {
-            session_destroy();
-        } elseif (session_id() !== '') {
-            session_start();
-            session_destroy();
-        }
+        @session_destroy();
         session_id('');
         $this->session = new Session();
     }
 
     protected function tearDown(): void
     {
+        @session_start();
         $_SESSION = [];
-        if (session_status() !== PHP_SESSION_NONE) {
-            session_destroy();
-        } elseif (session_id() !== '') {
-            session_start();
-            session_destroy();
-        }
+        @session_destroy();
+        session_id('');
     }
 
     public function testStartReleasesLock(): void
