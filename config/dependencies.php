@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Doctrine\DBAL\DriverManager;
 use App\Renderer\JsonRenderer;
-use App\Model\Post;
 use App\Util\SessionInterface;
 use App\Util\Session;
 use App\Util\Flash;
@@ -82,6 +81,4 @@ return [
     },
 
     JsonRenderer::class => DI\autowire(),
-
-    Post::class => DI\autowire(),
 ];

@@ -100,7 +100,7 @@ public/index.php
 | `config/dependencies.php` | All DI definitions in one file. |
 | `config/routes.php` | ALL routes in one file. Add new routes here. |
 | `config/middleware.php` | Middleware stack. TwigMiddleware + app middleware. |
-| `migrations/*.sql` | Timestamped SQL files. Run via `php migrate`. |
+| `migrations/*.sql` | Timestamped SQL files (example files use .sql.example suffix). Run via `php migrate`. |
 | `config/console.php` | CLI command definitions. Add new commands here. |
 | `src/Controller/*.php` | Request handlers. Each method receives `Request` + returns `Response`. |
 | `src/Model/*.php` | DBAL query wrappers. Constructor-inject `Connection`. |
@@ -122,9 +122,20 @@ public/index.php
 
 ### Adding a New Route
 
-1. Add the route to `config/routes.php`:
+1. Add the route to `config/routes.php` — flat or grouped:
    ```php
+   // Flat route
    $app->get('/example', [ExampleController::class, 'index']);
+
+   // Route with URL placeholder (see step 2 for signature)
+   $app->get('/example/{id}', [ExampleController::class, 'show']);
+
+   // Grouped routes share a prefix and can have per-group middleware
+   use Slim\Routing\RouteCollectorProxy;
+   $app->group('/api', function (RouteCollectorProxy $api) {
+       $api->get('/resources', [ExampleController::class, 'index']);
+       $api->get('/resources/{id}', [ExampleController::class, 'show']);
+   });
    ```
 2. Create `src/Controller/ExampleController.php`:
    ```php
@@ -140,6 +151,16 @@ public/index.php
        public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
        {
            return $this->twig->render($response, 'example.twig');
+       }
+
+       // URL placeholders become individual parameters by name.
+       // php-di/slim-bridge passes route args as named parameters, so
+       // do NOT use array $args = [] — it will always be empty.
+       public function show(ServerRequestInterface $request, ResponseInterface $response, string $id): ResponseInterface
+       {
+           return $this->twig->render($response, 'example.twig', [
+               'id' => $id,
+           ]);
        }
    }
    ```
@@ -391,6 +412,8 @@ Controller tests don't need the database — mock models or test endpoints that 
 
 ### Testing Models
 
+Model tests create their tables inline in `setUp()` since example migrations are `.sql.example` files that aren't auto-run. This keeps each test file self-contained.
+
 ```php
 class YourModelTest extends TestCase
 {
@@ -398,20 +421,23 @@ class YourModelTest extends TestCase
     {
         $this->app = $this->createApp();
         $this->conn = $this->app->getContainer()->get(Connection::class);
-        $this->runMigrations();
+        // Create the table inline — the migration is a .sql.example reference
+        $this->conn->executeStatement('CREATE TABLE your_table (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name VARCHAR(255) NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )');
     }
 
     public function testFindAll(): void
     {
-        $this->conn->insert('posts', ['title' => 'Test', 'body' => 'Hello']);
-        $model = new Post($this->conn);
+        $this->conn->insert('your_table', ['name' => 'Test']);
+        $model = new ExampleModel($this->conn);
         $results = $model->findAll();
         $this->assertCount(1, $results);
     }
 }
 ```
-
-Model tests run the actual SQL migrations against an in-memory SQLite database — no schema duplication, queries are tested against real data.
 
 ### Test Configuration
 
@@ -439,7 +465,7 @@ composer lint && composer stan && composer test
 ## What I Care About (Selfish Requests)
 
 1. **Flat files, not folders.** I find things faster in a shallow tree.
-2. **Tests I can copy-paste.** A good test file is a template for the next 20 tests I'll write. `tests/Model/PostTest.php` is the model test template.
+2. **Tests I can copy-paste.** A good test file is a template for the next 20 tests I'll write. `tests/Model/ExampleModelTest.php` is the model test template.
 3. **DBAL, not raw PDO.** Named parameters, query builder, schema introspection — I know this API well.
 4. **JSON for debugging.** When you curl the server, use `application/json` accept header. HTML error pages are massive and full of JS/CSS noise.
 
