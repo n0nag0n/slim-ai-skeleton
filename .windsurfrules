@@ -412,6 +412,8 @@ Controller tests don't need the database — mock models or test endpoints that 
 
 ### Testing Models
 
+Model tests create their tables inline in `setUp()` since example migrations are `.sql.example` files that aren't auto-run. This keeps each test file self-contained.
+
 ```php
 class YourModelTest extends TestCase
 {
@@ -419,20 +421,23 @@ class YourModelTest extends TestCase
     {
         $this->app = $this->createApp();
         $this->conn = $this->app->getContainer()->get(Connection::class);
-        $this->runMigrations();
+        // Create the table inline — the migration is a .sql.example reference
+        $this->conn->executeStatement('CREATE TABLE your_table (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name VARCHAR(255) NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )');
     }
 
     public function testFindAll(): void
     {
-        $this->conn->insert('posts', ['title' => 'Test', 'body' => 'Hello']);
-        $model = new Post($this->conn);
+        $this->conn->insert('your_table', ['name' => 'Test']);
+        $model = new ExampleModel($this->conn);
         $results = $model->findAll();
         $this->assertCount(1, $results);
     }
 }
 ```
-
-Model tests run the actual SQL migrations against an in-memory SQLite database — no schema duplication, queries are tested against real data.
 
 ### Test Configuration
 
