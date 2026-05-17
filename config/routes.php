@@ -10,4 +10,6 @@ return function (App $app) {
     $app->get('/', [HomeController::class, 'index']);
 
     $app->get('/health', [HealthController::class, 'health']);
+
+    $app->get('/posts/{id}', [HomeController::class, 'show']);
 };

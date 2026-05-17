@@ -125,6 +125,7 @@ public/index.php
 1. Add the route to `config/routes.php`:
    ```php
    $app->get('/example', [ExampleController::class, 'index']);
+   $app->get('/example/{id}', [ExampleController::class, 'show']);
    ```
 2. Create `src/Controller/ExampleController.php`:
    ```php
@@ -140,6 +141,16 @@ public/index.php
        public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
        {
            return $this->twig->render($response, 'example.twig');
+       }
+
+       // URL placeholders become individual parameters by name.
+       // php-di/slim-bridge passes route args as named parameters, so
+       // do NOT use array $args = [] — it will always be empty.
+       public function show(ServerRequestInterface $request, ResponseInterface $response, string $id): ResponseInterface
+       {
+           return $this->twig->render($response, 'example.twig', [
+               'id' => $id,
+           ]);
        }
    }
    ```

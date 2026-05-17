@@ -21,4 +21,13 @@ class HomeController
             'version' => '1.0.0',
         ]);
     }
+
+    public function show(ServerRequestInterface $request, ResponseInterface $response, string $id): ResponseInterface
+    {
+        return $this->twig->render($response, 'home.twig', [
+            'app' => 'slim-ai-skeleton',
+            'version' => '1.0.0',
+            'id' => $id,
+        ]);
+    }
 }
