@@ -364,12 +364,14 @@ The project includes a CLI framework at `php console`. Commands are registered i
 
 ```bash
 php console help                    # List all commands
-php console make:controller <Name>  # Scaffold controller + test
-php console make:model <Name>       # Scaffold model + migration + test
+php console make:controller <Name>  # Scaffold controller + test + templates
+php console make:model <Name>       # Scaffold a DBAL model class
 php console make:migration <desc>   # Create a blank migration file
+php console make:seeder <Name>      # Scaffold a database seeder
 php console cache:clear             # Clear Twig/DI cache
 php console route:list              # Show registered routes
 php console sync-ai-instructions    # Sync AGENTS.md to all AI configs
+php console db:seed                 # Run all database seeders
 ```
 
 To add a new command:
@@ -393,6 +395,19 @@ composer sync-ai-instructions
 
 Base test class: `tests/TestCase.php` — provides `createApp()`, `createRequest()`, and `runMigrations()`.
 
+### Two-Suite Testing
+
+Tests run in two modes:
+
+| Suite | Command | DB | Speed |
+|-------|---------|-----|-------|
+| **Unit** | `composer test` | SQLite in-memory | Fast |
+| **Integration** | `composer test:integration` | MariaDB (docker) | Slow |
+
+**Unit tests** are the default. They run against an in-memory SQLite database and are fast enough for TDD.
+
+**Integration tests** run against a real MariaDB database (via Docker) and catch DB-specific issues that SQLite can't (e.g., SQL mode differences, auto_increment behavior). Only use when SQLite isn't sufficient.
+
 ### Testing Controllers
 
 ```php
@@ -403,9 +418,94 @@ class YourControllerTest extends TestCase
         $app = $this->createApp();
         $request = $this->createRequest('GET', '/path');
         $response = $app->handle($request);
+
         $this->assertEquals(200, $response->getStatusCode());
     }
 }
+```
+
+Controller tests don't need the database — mock models or test endpoints that don't touch the DB.
+
+### Testing Models
+
+Model tests create their tables inline in `setUp()` since migrations are `.sql.example` files that aren't auto-run. This keeps each test file self-contained.
+
+```php
+class YourModelTest extends TestCase
+{
+    protected Connection $conn;
+
+    protected function setUp(): void
+    {
+        $this->app = $this->createApp();
+        $this->conn = $this->app->getContainer()->get(Connection::class);
+        $this->conn->executeStatement('CREATE TABLE your_table (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name VARCHAR(255) NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )');
+    }
+
+    public function testFindAll(): void
+    {
+        $this->conn->insert('your_table', ['name' => 'Test']);
+        $model = new ExampleModel($this->conn);
+        $results = $model->findAll();
+        $this->assertCount(1, $results);
+    }
+}
+```
+
+### Adding Integration Tests
+
+Integration tests live in `tests/integration/`. They run against the real database configured in `phpunit.integration.xml`.
+
+```php
+namespace App\Test\Integration;
+
+class YourModelIntegrationTest extends TestCase
+{
+    protected Connection $conn;
+
+    protected function setUp(): void
+    {
+        $this->app = $this->createApp();
+        $this->conn = $this->app->getContainer()->get(Connection::class);
+        $this->conn->executeStatement('CREATE TABLE your_table (...)');
+    }
+
+    public function testFindAllWithRealDb(): void
+    {
+        // test against real MariaDB
+    }
+}
+```
+
+Run integration tests:
+```bash
+composer test:integration
+```
+
+Or run everything:
+```bash
+composer test:all
+```
+
+### Testing Philosophy
+
+Tests should be straightforward — no mocking frameworks, no reflection workarounds, no over-engineering.
+
+**Reflection in tests is a code smell.** If you need reflection to access private properties or inject test data, the code wasn't designed for testability. Fix the code instead: add a single optional constructor parameter or a setter. One line, no new abstractions.
+
+**Don't add abstractions just to make things testable.** An interface with one implementation or a filesystem wrapper class is worse than the problem it solves. The line between well-factored and over-engineered is crossed when you add your second class to support a single test. Keep it simple:
+
+- Good: an optional constructor parameter with a natural default
+- OK: a setter used only in tests
+- Too far: extracting interfaces, creating strategy classes, dependency-injecting filesystem wrappers
+
+After every task, verify nothing is broken:
+```bash
+composer lint && composer stan && composer test
 ```
 
 Controller tests don't need the database — mock models or test endpoints that don't touch the DB.
@@ -553,14 +653,13 @@ A `csrf_token` variable is automatically available in all Twig templates for use
 
 `App\Security\CorsMiddleware` is registered in `config/middleware.php` with an allowlist of origins. It handles `OPTIONS` preflight requests and adds `Access-Control-Allow-Origin`, `Access-Control-Allow-Credentials`, and `Access-Control-Expose-Headers` headers.
 
-To add or remove allowed origins, edit the array in `config/middleware.php`:
+To add or remove allowed origins, set the `ALLOWED_ORIGINS` environment variable in `.env`:
 
-```php
-$app->add(new CorsMiddleware([
-    'http://localhost:8080',
-    'http://localhost:5173',
-]));
 ```
+ALLOWED_ORIGINS=http://localhost:8080,http://localhost:5173
+```
+
+The middleware reads this env var at boot time via `config/dependencies.php`.
 
 ### Password Hashing
 

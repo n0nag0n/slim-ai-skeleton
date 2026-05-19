@@ -13,7 +13,6 @@ class MakeModelTest extends TestCase
     private string $name;
     private string $modelPath = '';
     private string $testPath = '';
-    private string $migrationPath = '';
 
     protected function setUp(): void
     {
@@ -22,14 +21,14 @@ class MakeModelTest extends TestCase
 
     protected function tearDown(): void
     {
-        foreach ([$this->modelPath, $this->testPath, $this->migrationPath] as $path) {
+        foreach ([$this->modelPath, $this->testPath] as $path) {
             if ($path && file_exists($path)) {
                 unlink($path);
             }
         }
     }
 
-    public function testCreatesModelMigrationAndTest(): void
+    public function testCreatesModelAndTest(): void
     {
         $container = (new ContainerBuilder())->build();
         $command = new MakeModel();
@@ -50,17 +49,19 @@ class MakeModelTest extends TestCase
         $model = file_get_contents($this->modelPath);
         $this->assertStringContainsString('class ' . $this->name, $model);
         $this->assertStringContainsString('Connection $conn', $model);
+        $this->assertStringContainsString('declare(strict_types=1)', $model);
 
         $test = file_get_contents($this->testPath);
         $this->assertStringContainsString('class ' . $this->name . 'Test', $test);
+        $this->assertStringContainsString('declare(strict_types=1)', $test);
 
-        preg_match('/Created: migrations\/(\d{8}_\d{6}_create_.+?_table\.sql)/', $output, $matches);
-        $this->assertNotEmpty($matches);
-        $this->migrationPath = $root . '/migrations/' . $matches[1];
-        $this->assertFileExists($this->migrationPath);
+        $this->assertStringContainsString('testFindAll', $test);
+        $this->assertStringContainsString('testFindById', $test);
+        $this->assertStringContainsString('testCreate', $test);
+        $this->assertStringContainsString('testUpdate', $test);
+        $this->assertStringContainsString('testDelete', $test);
 
-        $migration = file_get_contents($this->migrationPath);
-        $this->assertStringContainsString('CREATE TABLE', $migration);
+        $this->assertStringContainsString('make:migration', $output);
     }
 
     public function testReturnsErrorWithoutName(): void

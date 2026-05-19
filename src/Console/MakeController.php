@@ -23,11 +23,18 @@ class MakeController implements CommandInterface
         $root = dirname(__DIR__, 2);
 
         $lowerName = lcfirst($name);
+        $templateDir = $root . '/templates/' . $lowerName;
 
-        // Create controller
+        if (!is_dir($templateDir)) {
+            mkdir($templateDir, 0755, true);
+            echo "Created: templates/{$lowerName}/\n";
+        }
+
         $controllerPath = $root . '/src/Controller/' . $name . 'Controller.php';
         $controllerStub = <<<PHP
 <?php
+
+declare(strict_types=1);
 
 namespace App\Controller;
 
@@ -42,16 +49,52 @@ class {$name}Controller
     {
         return \$this->twig->render(\$response, '{$lowerName}/index.twig');
     }
+
+    public function show(ServerRequestInterface \$request, ResponseInterface \$response, string \$id): ResponseInterface
+    {
+        return \$this->twig->render(\$response, '{$lowerName}/show.twig', [
+            'id' => \$id,
+        ]);
+    }
 }
 
 PHP;
         file_put_contents($controllerPath, $controllerStub);
         echo "Created: src/Controller/{$name}Controller.php\n";
 
-        // Create test
+        $indexTwig = $templateDir . '/index.twig';
+        $indexStub = <<<TWIG
+{% extends 'layout.twig' %}
+
+{% block title %}{$name}{% endblock %}
+
+{% block content %}
+<p>List of {$lowerName}.</p>
+{% endblock %}
+
+TWIG;
+        file_put_contents($indexTwig, $indexStub);
+        echo "Created: templates/{$lowerName}/index.twig\n";
+
+        $showTwig = $templateDir . '/show.twig';
+        $showStub = <<<TWIG
+{% extends 'layout.twig' %}
+
+{% block title %}{$name} #{{ id }}{% endblock %}
+
+{% block content %}
+<p>Showing {$lowerName} #{{ id }}.</p>
+{% endblock %}
+
+TWIG;
+        file_put_contents($showTwig, $showStub);
+        echo "Created: templates/{$lowerName}/show.twig\n";
+
         $testPath = $root . '/tests/Controller/' . $name . 'ControllerTest.php';
         $testStub = <<<PHP
 <?php
+
+declare(strict_types=1);
 
 namespace App\Test\Controller;
 
@@ -67,14 +110,24 @@ class {$name}ControllerTest extends TestCase
 
         \$this->assertEquals(200, \$response->getStatusCode());
     }
+
+    public function testShowReturns200(): void
+    {
+        \$app = \$this->createApp();
+        \$request = \$this->createRequest('GET', '/{$lowerName}/1');
+        \$response = \$app->handle(\$request);
+
+        \$this->assertEquals(200, \$response->getStatusCode());
+    }
 }
 
 PHP;
         file_put_contents($testPath, $testStub);
         echo "Created: tests/Controller/{$name}ControllerTest.php\n";
 
-        echo "\nNext: Add route to config/routes.php:\n";
+        echo "\nNext: Add routes to config/routes.php:\n";
         echo "  \$app->get('/{$lowerName}', [{$name}Controller::class, 'index']);\n";
+        echo "  \$app->get('/{$lowerName}/{id}', [{$name}Controller::class, 'show']);\n";
 
         return 0;
     }

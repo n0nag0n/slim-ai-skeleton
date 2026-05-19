@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Debug\Tracy;
 
 use Slim\App;
@@ -15,10 +17,10 @@ class ExtensionLoader
 
         $bar = Debugger::getBar();
 
-        $bar->addPanel(new RequestPanel);
-        $bar->addPanel(new ResponsePanel);
+        $bar->addPanel(new RequestPanel());
+        $bar->addPanel(new ResponsePanel());
         $bar->addPanel(new RoutesPanel($app));
         $bar->addPanel(new SessionPanel($app->getContainer()->get(\App\Util\SessionInterface::class)));
-        $bar->addPanel(new DatabasePanel);
+        $bar->addPanel(new DatabasePanel());
     }
 }

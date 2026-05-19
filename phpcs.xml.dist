@@ -14,5 +14,5 @@
             <property name="spacesCountAroundEqualsSign" value="0"/>
         </properties>
     </rule>
-    <exclude-pattern>src/Debug/</exclude-pattern>
+
 </ruleset>

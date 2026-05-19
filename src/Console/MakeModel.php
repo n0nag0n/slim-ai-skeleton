@@ -23,24 +23,12 @@ class MakeModel implements CommandInterface
         $root = dirname(__DIR__, 2);
         $table = $this->toSnakePlural($name);
 
-        // Create migration
-        $timestamp = date('Ymd_His');
-        $migrationFile = $root . '/migrations/' . $timestamp . '_create_' . $table . '_table.sql';
-        $migrationStub = <<<SQL
-CREATE TABLE {$table} (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
-SQL;
-        file_put_contents($migrationFile, $migrationStub);
-        echo "Created: migrations/" . basename($migrationFile) . "\n";
-
         // Create model
         $modelPath = $root . '/src/Model/' . $name . '.php';
         $modelStub = <<<PHP
 <?php
+
+declare(strict_types=1);
 
 namespace App\Model;
 
@@ -91,6 +79,8 @@ PHP;
         $testStub = <<<PHP
 <?php
 
+declare(strict_types=1);
+
 namespace App\Test\Model;
 
 use App\Test\TestCase;
@@ -104,20 +94,66 @@ class {$name}Test extends TestCase
     {
         \$app = \$this->createApp();
         \$this->conn = \$app->getContainer()->get(Connection::class);
-        \$this->runMigrations();
+        \$this->conn->executeStatement('CREATE TABLE {$table} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name VARCHAR(255) NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )');
+    }
+
+    public function testFindAll(): void
+    {
+        \$this->conn->insert('{$table}', ['name' => 'Test']);
+        \$model = new {$name}(\$this->conn);
+        \$results = \$model->findAll();
+        \$this->assertCount(1, \$results);
+    }
+
+    public function testFindById(): void
+    {
+        \$this->conn->insert('{$table}', ['name' => 'Test']);
+        \$model = new {$name}(\$this->conn);
+        \$result = \$model->findById(1);
+        \$this->assertNotNull(\$result);
+        \$this->assertEquals('Test', \$result['name']);
     }
 
     public function testCreate(): void
     {
-        \$this->conn->insert('{$table}', []);
-        \$results = \$this->conn->fetchAllAssociative('SELECT * FROM {$table}');
-        \$this->assertCount(1, \$results);
+        \$model = new {$name}(\$this->conn);
+        \$id = \$model->create(['name' => 'Created']);
+        \$this->assertEquals(1, \$id);
+        \$result = \$model->findById(\$id);
+        \$this->assertEquals('Created', \$result['name']);
+    }
+
+    public function testUpdate(): void
+    {
+        \$this->conn->insert('{$table}', ['name' => 'Original']);
+        \$model = new {$name}(\$this->conn);
+        \$model->update(1, ['name' => 'Updated']);
+        \$result = \$model->findById(1);
+        \$this->assertEquals('Updated', \$result['name']);
+    }
+
+    public function testDelete(): void
+    {
+        \$this->conn->insert('{$table}', ['name' => 'ToDelete']);
+        \$model = new {$name}(\$this->conn);
+        \$model->delete(1);
+        \$result = \$model->findById(1);
+        \$this->assertNull(\$result);
     }
 }
 
 PHP;
         file_put_contents($testPath, $testStub);
         echo "Created: tests/Model/{$name}Test.php\n";
+
+        echo "\nNext steps:\n";
+        echo "  1. Run: php console make:migration {$table} to create the database migration\n";
+        echo "  2. Add DI entry in config/dependencies.php:\n";
+        echo "     {$name}::class => DI\\autowire(),\n";
 
         return 0;
     }

@@ -1,12 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Debug\Tracy;
 
 use App\Util\SessionInterface;
 
 class SessionPanel extends ExtensionBase implements \Tracy\IBarPanel
 {
-    public function __construct(private SessionInterface $session) {}
+    public function __construct(private SessionInterface $session)
+    {
+    }
 
     public function getTab(): string
     {
