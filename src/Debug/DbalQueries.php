@@ -8,8 +8,13 @@ final class DbalQueries
 {
     private array $queries = [];
 
-    public function addQuery(float $duration, string $sql, ?array $params = null, ?array $types = null, ?string $source = null): void
-    {
+    public function addQuery(
+        float $duration,
+        string $sql,
+        ?array $params = null,
+        ?array $types = null,
+        ?string $source = null,
+    ): void {
         $this->queries[] = [
             'sql' => $sql,
             'params' => $params ?? [],

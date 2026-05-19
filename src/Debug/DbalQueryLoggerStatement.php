@@ -34,15 +34,26 @@ class DbalQueryLoggerStatement extends AbstractStatementMiddleware
         $start = microtime(true);
         try {
             $result = parent::execute();
-            $this->queries->addQuery(microtime(true) - $start, $this->sql, $this->params, $this->types, $this->getSource());
+            $this->logQuery($start);
             $this->queries->setLastQueryMethod('prepare');
             $this->queries->setLastQueryRows($result->rowCount());
             return $result;
         } catch (\Throwable $e) {
-            $this->queries->addQuery(microtime(true) - $start, $this->sql, $this->params, $this->types, $this->getSource());
+            $this->logQuery($start);
             $this->queries->setLastQueryMethod('prepare');
             throw $e;
         }
+    }
+
+    private function logQuery(float $start): void
+    {
+        $this->queries->addQuery(
+            microtime(true) - $start,
+            $this->sql,
+            $this->params,
+            $this->types,
+            $this->getSource(),
+        );
     }
 
     private function getSource(): string

@@ -13,14 +13,10 @@ class RequestPanel extends ExtensionBase implements \Tracy\IBarPanel
         $method = TracyMiddleware::$requestData['method'] ?? 'GET';
         $uri = TracyMiddleware::$requestData['uri'] ?? '';
 
-        return <<<HTML
-<span title="Request">
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="green" viewBox="0 0 16 16">
-        <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm5.5 10a.5.5 0 0 0 .832.374l4.5-4a.5.5 0 0 0 0-.748l-4.5-4A.5.5 0 0 0 5.5 4v8z"/>
-    </svg>
-    <span class="tracy-label">{$method} {$this->ellipsis($uri, 40)}</span>
-</span>
-HTML;
+        return $this->loadTemplate('request-tab.svg.html', [
+            'method' => $method,
+            'uri' => $this->ellipsis($uri, 40),
+        ]);
     }
 
     public function getPanel(): string
@@ -75,7 +71,9 @@ HTML;
         }
         $rows = '';
         foreach ($data as $key => $value) {
-            $rows .= '<tr><td>' . htmlspecialchars((string) $key) . '</td><td>' . $this->handleLongStrings($value) . '</td></tr>';
+            $keyHtml = htmlspecialchars((string) $key);
+            $valHtml = $this->handleLongStrings($value);
+            $rows .= "<tr><td>{$keyHtml}</td><td>{$valHtml}</td></tr>";
         }
         return <<<HTML
 <table>

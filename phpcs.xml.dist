@@ -6,6 +6,9 @@
     <file>tests/</file>
     <file>public/index.php</file>
     <file>console</file>
+
+    <exclude-pattern>templates/tracy/*.html</exclude-pattern>
+
     <rule ref="PSR12"/>
     <rule ref="SlevomatCodingStandard.TypeHints.DeclareStrictTypes">
         <properties>
