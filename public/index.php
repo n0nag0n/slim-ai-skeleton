@@ -57,6 +57,28 @@ $errorMiddleware->setDefaultErrorHandler(
         $app
     ) {
         if ($displayErrorDetails) {
+            // In debug mode, X-Dev: 1 + Accept: application/json returns
+            // compact JSON with exception details instead of Tracy HTML
+            if ($request->getHeaderLine('X-Dev') === '1') {
+                $accept = $request->getHeaderLine('Accept');
+                if (!str_contains($accept, 'text/html')) {
+                    $debug = [
+                        'message' => $exception->getMessage(),
+                        'file' => $exception->getFile(),
+                        'line' => $exception->getLine(),
+                        'type' => $exception::class,
+                        'trace' => explode("\n", $exception->getTraceAsString()),
+                    ];
+                    $body = json_encode($debug, JSON_UNESCAPED_SLASHES);
+                    if ($body === false) {
+                        $body = '{"message":"Internal Server Error"}';
+                    }
+                    $response = $app->getResponseFactory()->createResponse(500);
+                    $response->getBody()->write($body);
+                    return $response->withHeader('Content-Type', 'application/json');
+                }
+            }
+
             throw $exception;
         }
 
