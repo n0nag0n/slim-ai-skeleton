@@ -5,27 +5,27 @@ services:
       - "8080:8080"
     volumes:
       - .:/app
+    healthcheck:
+      test: curl -f http://localhost:8080/health || exit 1
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+  db:
+    image: mariadb:11
+    ports:
+      - "3306:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_PASS:-secret}
+      MARIADB_DATABASE: ${DB_NAME:-app}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: mariadb-admin ping -u root -p${DB_PASS:-secret}
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
 
-  # db:
-  #   image: mariadb:11
-  #   ports:
-  #     - "3306:3306"
-  #   environment:
-  #     MARIADB_ROOT_PASSWORD: ${DB_PASS:-secret}
-  #     MARIADB_DATABASE: ${DB_NAME:-app}
-  #   volumes:
-  #     - db_data:/var/lib/mysql
-
-  # db:
-  #   image: postgres:17-alpine
-  #   ports:
-  #     - "5432:5432"
-  #   environment:
-  #     POSTGRES_DB: ${DB_NAME:-app}
-  #     POSTGRES_USER: ${DB_USER:-app}
-  #     POSTGRES_PASSWORD: ${DB_PASS:-secret}
-  #   volumes:
-  #     - db_data:/var/lib/postgresql/data
-
-# volumes:
-#   db_data:
+volumes:
+  db_data:
