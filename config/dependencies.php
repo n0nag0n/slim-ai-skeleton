@@ -14,17 +14,18 @@ use Doctrine\DBAL\Configuration;
 use App\Debug\DbalQueryLogger;
 use App\Security\CsrfMiddleware;
 use App\Security\CorsMiddleware;
+use Psr\Container\ContainerInterface;
 
 return [
     SessionInterface::class => DI\get(Session::class),
     Session::class => DI\autowire(),
     Flash::class => DI\autowire(),
     Csrf::class => DI\autowire(),
-
-    CsrfMiddleware::class => function ($container) {
+    CsrfMiddleware::class => function (ContainerInterface $c) {
+        $excluded = $_ENV['CSRF_EXCLUDED_PATHS'] ?? '';
+        $paths = $excluded !== '' ? explode(',', $excluded) : [];
         $debug = filter_var($_ENV['DEBUG_MODE'] ?? false, FILTER_VALIDATE_BOOLEAN);
-        $excludedPaths = array_filter(explode(',', $_ENV['CSRF_EXCLUDED_PATHS'] ?? ''));
-        return new CsrfMiddleware($container->get(Csrf::class), $excludedPaths, $debug);
+        return new CsrfMiddleware($c->get(Csrf::class), $paths, $debug);
     },
 
     CorsMiddleware::class => function () {

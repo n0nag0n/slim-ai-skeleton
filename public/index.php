@@ -56,21 +56,14 @@ $errorMiddleware->setDefaultErrorHandler(
     ) use (
         $app
     ) {
+        // X-Dev: 1 in debug mode → always JSON with trace, bypass Tracy
         $xDev = $request->getHeaderLine('X-Dev');
 
-        // Debug mode (no X-Dev) → let Tracy render the full debug page
         if ($displayErrorDetails && $xDev !== '1') {
             throw $exception;
         }
 
-        $code = $exception instanceof \Slim\Exception\HttpException
-            ? $exception->getCode()
-            : 500;
-
-        if ($code < 400 || $code > 599) {
-            $code = 500;
-        }
-
+        // Log the error server-side regardless
         if ($logErrors) {
             error_log(sprintf(
                 '[%s] %s in %s:%d',
@@ -81,10 +74,18 @@ $errorMiddleware->setDefaultErrorHandler(
             ));
         }
 
+        $code = $exception instanceof \Slim\Exception\HttpException
+            ? $exception->getCode()
+            : 500;
+
+        if ($code < 400 || $code > 599) {
+            $code = 500;
+        }
+
+        // X-Dev always gets compact JSON; otherwise content-negotiate
         $accept = $request->getHeaderLine('Accept');
         $wantsHtml = str_contains($accept, 'text/html');
 
-        // X-Dev always returns JSON; otherwise content-negotiate
         if ($xDev !== '1' && $wantsHtml) {
             $twig = $app->getContainer()->get(\Slim\Views\Twig::class);
 
@@ -101,22 +102,16 @@ $errorMiddleware->setDefaultErrorHandler(
             );
         }
 
-        // JSON response
         $data = ['error' => 'Internal Server Error'];
 
         if ($displayErrorDetails) {
-            $data['error'] = $exception->getMessage();
-            $data['file'] = $exception->getFile();
-            $data['line'] = $exception->getLine();
-            $data['trace'] = array_map(
-                fn(array $t) => [
-                    'file' => $t['file'] ?? null,
-                    'line' => $t['line'] ?? null,
-                    'function' => $t['function'] ?? null,
-                    'class' => $t['class'] ?? null,
-                ],
-                $exception->getTrace()
-            );
+            $data = [
+                'message' => $exception->getMessage(),
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
+                'type' => $exception::class,
+                'trace' => explode("\n", $exception->getTraceAsString()),
+            ];
         }
 
         $body = json_encode($data, JSON_UNESCAPED_SLASHES);
