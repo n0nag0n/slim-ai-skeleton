@@ -13,6 +13,7 @@ use App\Console\SyncAiInstructions;
 use App\Console\Help;
 use App\Console\Migrate;
 use App\Console\DbSeed;
+use App\Console\ReviewAndPr;
 
 return [
     'make:controller' => ['class' => MakeController::class, 'description' => 'Scaffold a new controller + test'],
@@ -27,5 +28,9 @@ return [
     ],
     'migrate' => ['class' => Migrate::class, 'description' => 'Run pending database migrations'],
     'db:seed' => ['class' => DbSeed::class, 'description' => 'Run all database seeders'],
+    'review:pr' => [
+        'class' => ReviewAndPr::class,
+        'description' => 'Run lint/stan/test, then create branch + commit + PR',
+    ],
     'help' => ['class' => Help::class, 'description' => 'Display available commands'],
 ];
