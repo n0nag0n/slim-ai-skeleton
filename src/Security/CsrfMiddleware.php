@@ -42,11 +42,6 @@ class CsrfMiddleware implements MiddlewareInterface
             }
         }
 
-        // Dev bypass: X-Dev: 1 header skips CSRF when DEBUG_MODE=true
-        if ($this->debug && $request->getHeaderLine('X-Dev') === '1') {
-            return $handler->handle($request);
-        }
-
         $token = $request->getHeaderLine('X-CSRF-Token');
 
         if ($token === '') {

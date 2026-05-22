@@ -155,11 +155,41 @@ Here's how to add a new page at `/hello`:
 | `DEBUG_MODE` | `true` | Shows the Tracy debug bar. Turn off in production. |
 | `DB_DRIVER` | `pdo_sqlite` | Database driver (`pdo_mysql`, `pdo_pgsql`, etc.) |
 | `DB_PATH` | `var/database.sqlite` | Where the SQLite database file lives |
+| `CSRF_EXCLUDED_PATHS` | — | Comma-separated URL path prefixes to skip CSRF checks (e.g. `/api,/health`) |
+| `ALLOWED_ORIGINS` | `http://localhost:8080` | Comma-separated CORS allowed origins |
 
 ## Error Handling
 
-- **Development** (`DEBUG_MODE=true`): Tracy shows a detailed error page with stack traces.
+- **Development** (`DEBUG_MODE=true`): Tracy shows a detailed error page with stack traces. Pass `X-Dev: 1` header to get compact JSON with trace details instead.
 - **Production** (`DEBUG_MODE=false`): Shows a friendly error page (HTML for browsers, JSON for API calls).
+
+## Debugging
+
+When `DEBUG_MODE=true`, add the `X-Dev: 1` header to your requests for debugging convenience:
+
+- **Bypasses CSRF** — no need to generate tokens during API testing
+- **Forces JSON errors** — compact `{message, file, line, type, trace}` responses instead of Tracy HTML
+
+```bash
+curl -X POST http://localhost:8080/api/tasks \
+  -H "Content-Type: application/json" \
+  -H "X-Dev: 1" \
+  -d '{"title":"Test"}'
+```
+
+The `X-Dev` header is silently ignored in production (`DEBUG_MODE=false`).
+
+## Migrations
+
+Migrations are raw SQL files in `migrations/`. Run them with:
+
+```bash
+composer migrate
+```
+
+To add driver-specific variants (e.g. MariaDB `LONGTEXT` vs SQLite `TEXT`), create a `.mysql.sql` or `.pgsql.sql` copy alongside the base `.sql` migration. The runner picks the right one for your `DB_DRIVER`.
+
+Migrations can also connect to MariaDB or PostgreSQL — see the `.env.example` for connection settings.
 
 ## Troubleshooting
 
@@ -170,7 +200,7 @@ composer start
 ```
 Use a different port: `php -S localhost:8081 -t public`
 
-**`php migrate` fails**
+**`composer migrate` fails**
 Make sure the `var/` directory is writable. SQLite creates the database file there.
 
 **Nothing shows up at localhost:8080**

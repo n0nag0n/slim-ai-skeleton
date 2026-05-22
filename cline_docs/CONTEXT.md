@@ -339,10 +339,94 @@ Name methods and classes so they are self-documenting. A name like `findByStatus
 
 The error handler in `public/index.php`:
 
-- **Debug mode** (`DEBUG_MODE=true`): Throws the exception for Tracy to handle (beautiful debug page), unless `X-Dev: 1` header is present.
+- **Debug mode** (`DEBUG_MODE=true`): Throws the exception for Tracy to handle (beautiful debug page). Use `X-Dev: 1` header to get compact JSON instead.
 - **Production**: Content-negotiated. `Accept: text/html` → Twig error page. Otherwise → JSON.
 
 When curling the dev server for debugging, DON'T parse the HTML output. Use `curl -H "Accept: application/json" -H "X-Dev: 1"` to get compact JSON errors with file/line/trace in debug mode. The `X-Dev: 1` header also bypasses CSRF validation — see the Debugging section.
+
+### Live Testing
+
+Test against a running server to verify routes, CSRF, CORS, and database queries end-to-end.
+
+#### Docker (Primary)
+
+```bash
+# Start the stack (app + database)
+docker compose up -d
+
+# Run migrations
+docker compose exec app php migrate
+
+# Test a health check
+curl -w "\n" http://localhost:8080/health
+
+# Test an API endpoint (CSRF excluded by default for /api routes)
+curl -X POST http://localhost:8080/api/tasks \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Test"}'
+
+# Test a non-API state-changing route (CSRF required)
+curl -c /tmp/cookies.txt http://localhost:8080/login
+CSRF=$(grep csrf_token /tmp/cookies.txt | awk '{print $NF}')
+curl -X POST http://localhost:8080/login \
+  -b /tmp/cookies.txt \
+  -H "Content-Type: application/json" \
+  -d "{\"csrf_token\":\"$CSRF\"}"
+
+# Stop
+docker compose down
+
+# Reset the database
+docker compose exec app php console db:reset  # if available, else rm var/database.sqlite
+```
+
+#### php -S (Fallback)
+
+```bash
+# One-time setup
+cp -n .env.example .env
+mkdir -p var/log
+php migrate
+
+# Start the server (single-threaded, blocks terminal)
+composer start
+
+# In another terminal, test endpoints
+curl -w "\n" http://localhost:8080/health
+```
+
+#### X-Dev Header for AI Debugging
+
+When `DEBUG_MODE=true` in `.env`, add `X-Dev: 1` to get AI-friendly responses:
+
+```bash
+# CSRF bypass — skips CSRF check for state-changing requests
+curl -X POST http://localhost:8080/api/tasks \
+  -H "X-Dev: 1" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Test"}'
+
+# Compact error JSON — returns {message, file, line, type, trace} instead of Tracy HTML
+curl -H "Accept: application/json" -H "X-Dev: 1" http://localhost:8080/nonexistent
+```
+
+The `X-Dev` header is **only** active when `DEBUG_MODE=true`. In production (`DEBUG_MODE=false`), it is silently ignored. Never set `DEBUG_MODE=true` in production.
+
+### API Response Conventions
+
+When building API endpoints, follow this envelope pattern for predictable responses:
+
+```
+GET /api/resource        → 200 {"data": {...}}
+GET /api/resources       → 200 {"data": [...], "pagination": {...}}
+POST /api/resources      → 201 {"data": {...}}
+POST invalid             → 422 {"errors": {"field": ["Message"]}}
+PUT invalid              → 422 {"errors": {"field": ["Message"]}}
+Server error             → 500 {"error": "Internal Server Error"}
+Not found                → 404 {"error": "Resource not found"}
+```
+
+These are conventions, not enforced by the framework. Controllers return responses directly — follow the pattern for consistency.
 
 ### Migrations
 
