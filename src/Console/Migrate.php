@@ -57,7 +57,7 @@ class Migrate implements CommandInterface
                 continue;
             }
 
-            if (in_array($version, $executed)) {
+            if (in_array($version, $executed, true)) {
                 echo "Skipped: {$version}\n";
                 continue;
             }

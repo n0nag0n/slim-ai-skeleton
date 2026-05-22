@@ -30,7 +30,7 @@ Every dependency is a liability. Before adding one:
 - Never add a framework for something a 10-line function handles
 
 Current prod deps: slim, slim/psr7, php-di/slim-bridge, phpdotenv, doctrine/dbal, tracy, slim/twig-view. This is the ceiling, not the floor.
-Dev deps: phpunit, phpstan, phpcs.
+Dev deps: phpunit, phpstan, phpcs, spaze/phpstan-disallowed-calls, enlightn/security-checker.
 
 ### 3. No Magic
 
@@ -290,7 +290,7 @@ return $this->renderer->render($response, [
 
 ### Environment Variables
 
-`$_ENV` is reserved for boot-time wiring in `config/dependencies.php` only.
+`$_ENV` is reserved for boot-time wiring — only use it in `config/*` files, `src/Console/*` commands, and `src/Util/MigrationFileResolver.php`. Enforced by PHPStan's disallowed-calls rules.
 Never use `$_ENV` in controllers, models, services, or templates.
 
 ```php
@@ -482,6 +482,7 @@ php console cache:clear             # Clear Twig/DI cache
 php console route:list              # Show registered routes
 php console sync-ai-instructions    # Sync AGENTS.md to all AI configs
 php console db:seed                 # Run all database seeders
+composer security:check            # Scan composer.lock for known CVEs
 ```
 
 To add a new command:
@@ -733,6 +734,25 @@ When working with sessions:
 
 All database access goes through Doctrine DBAL's parameterized queries (`?` placeholders or named `:param` parameters). Never concatenate user input into SQL strings. If you must write raw SQL, always use parameterized queries through DBAL's `fetchAllAssociative()`, `executeStatement()`, `insert()`, `update()`, `delete()` methods.
 
+### Static Security Analysis
+
+PHPStan (via `spaze/phpstan-disallowed-calls`) enforces security rules at `composer stan` time:
+
+| Rule | What it catches | Example message |
+|------|----------------|-----------------|
+| **Superglobals** | `$_GET`, `$_POST`, `$_REQUEST`, `$_COOKIE`, `$_FILES`, `$_SERVER`, `$GLOBALS` in `src/` | "use $request->getQueryParams() instead" |
+| **`$_SESSION`** | Direct session access outside the `Session` wrapper | "use injected App\Util\Session instead" |
+| **`$_ENV`** | Env access outside `config/`, `Console/`, `MigrationFileResolver.php` | "use $_ENV only in config/" |
+| **Dangerous functions** | `eval`, `create_function`, `extract`, `var_dump`, `phpinfo` | "eval is evil" |
+| **Code execution** | `exec`, `shell_exec`, `system`, `passthru`, `proc_open`, `popen` | "disallowed function" |
+| **Weak hashing** | `md5`, `sha1`, `rand`, `mt_rand` | "use hash() with SHA-256 or password_hash()" |
+| **Raw SQL** | `mysql_query`, `mysqli_query`, `PDO::query`, `PDO::exec`, `PDO::prepare` | "use Doctrine DBAL parameterized queries" |
+| **Loose calls** | `in_array()` without `$strict`, `htmlspecialchars()` without `ENT_QUOTES` | "set third parameter to true" |
+
+The bundled configs included in `phpstan.neon.dist` cover the common cases. The rules also support `allowIn` and `allowInMethods` for legitimate exceptions (e.g. `$_ENV` in config files, `$_SESSION` in the Session wrapper).
+
+Additionally, `composer security:check` scans `composer.lock` against the Security Advisories database for known CVEs in dependencies. See `SECURITY.md` for the vulnerability triage workflow.
+
 ### Security Headers
 
 The `SecurityHeadersMiddleware` (`src/Security/SecurityHeadersMiddleware.php`) is registered in the middleware stack and adds these headers to every response:
@@ -842,3 +862,9 @@ After any change that touches security-relevant code (error handling, input vali
 ```bash
 composer lint && composer stan && composer test
 ```
+
+And run the full suite including dependency scan:
+```bash
+composer lint && composer stan && composer test && composer security:check
+```
+If `security:check` reports CVEs, follow the triage process in `SECURITY.md`.
