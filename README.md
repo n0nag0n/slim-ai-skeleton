@@ -33,7 +33,9 @@ ready to go. Everything is set up so you can start adding your own pages and fea
 - **PHPUnit** — testing framework to make sure your code works
 - **PHPStan** — static analysis to catch bugs before runtime
 - **PHP_CodeSniffer** — enforces consistent code style
-- **SQLite by default** — file-based database, no need for MySQL or PostgreSQL
+- **SQLite by default** — file-based database, no need for MySQL or PostgreSQL. Swap to MariaDB/MySQL/PostgreSQL anytime — Docker compose files are preconfigured.
+- **Security static analysis** — PHPStan rules (via `spaze/phpstan-disallowed-calls`) ban superglobals, dangerous functions, weak hashing, and raw query methods in `src/`
+- **Dependency vulnerability scanning** — `composer security:check` scans `composer.lock` against the Security Advisories database for known CVEs
 
 ## How AI fits in
 
@@ -51,7 +53,9 @@ already understand the patterns. The file `AGENTS.md` contains detailed instruct
 
 - PHP 8.2 or higher
 - [Composer](https://getcomposer.org/)
-- SQLite extension (`pdo_sqlite`) — usually included with PHP by default
+- SQLite extension (`pdo_sqlite`) — usually included with PHP by default, no database server needed
+
+> **Want MariaDB/MySQL or PostgreSQL?** The `.env.example` has connection settings and a `docker-compose.yml` is included to spin up a MariaDB instance. Switch `DB_DRIVER` in `.env` and you're set.
 
 ## Quick Start
 
@@ -74,6 +78,7 @@ Open `http://localhost:8080` in your browser. You should see the homepage.
 | `composer stan` | Run PHPStan static analysis |
 | `composer cs-fix` | Auto-fix code style issues |
 | `composer migrate` | Run pending database migrations |
+| `composer security:check` | Scan dependencies for known vulnerabilities |
 | `php console` | List all CLI commands (scaffolding, cache, routes) |
 | `composer sync-ai-instructions` | Sync AGENTS.md to AI tool config files |
 
@@ -189,7 +194,7 @@ composer migrate
 
 To add driver-specific variants (e.g. MariaDB `LONGTEXT` vs SQLite `TEXT`), create a `.mysql.sql` or `.pgsql.sql` copy alongside the base `.sql` migration. The runner picks the right one for your `DB_DRIVER`.
 
-Migrations can also connect to MariaDB or PostgreSQL — see the `.env.example` for connection settings.
+Migrations can also connect to MariaDB or PostgreSQL — see the `.env.example` for connection settings. A `docker-compose.yml` is included to run MariaDB locally.
 
 ## Troubleshooting
 
@@ -213,6 +218,10 @@ to run it in the background: `php -S localhost:8080 -t public > /dev/null 2>&1 &
 - Run `composer test` to confirm everything still works after your changes
 - Ask your AI assistant: "Add a page that shows the current time"
 - When you're ready to deploy, set `DEBUG_MODE=false` and `APP_ENV=production` in `.env`
+
+## Security
+
+See `SECURITY.md` for the vulnerability triage workflow when `composer security:check` reports a CVE.
 
 ## License
 

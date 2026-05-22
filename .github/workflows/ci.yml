@@ -29,6 +29,8 @@ jobs:
 
       - run: composer migrate
 
+      - run: composer security:check
+
       - run: composer test
 
   integration-tests:

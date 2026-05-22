@@ -1,5 +1,10 @@
 includes:
     - vendor/phpstan/phpstan-doctrine/extension.neon
+    - vendor/spaze/phpstan-disallowed-calls/extension.neon
+    - vendor/spaze/phpstan-disallowed-calls/disallowed-dangerous-calls.neon
+    - vendor/spaze/phpstan-disallowed-calls/disallowed-execution-calls.neon
+    - vendor/spaze/phpstan-disallowed-calls/disallowed-insecure-calls.neon
+    - vendor/spaze/phpstan-disallowed-calls/disallowed-loose-calls.neon
 
 parameters:
     level: 8
@@ -8,3 +13,57 @@ parameters:
         - config/
     excludePaths:
         - src/Debug/
+
+    disallowedSuperglobals:
+        -
+            superglobal: '$_GET'
+            message: 'use $request->getQueryParams() instead'
+        -
+            superglobal: '$_POST'
+            message: 'use $request->getParsedBody() instead'
+        -
+            superglobal: '$_REQUEST'
+            message: 'never use $_REQUEST - use explicit superglobal/Request methods'
+        -
+            superglobal: '$_COOKIE'
+            message: 'use $request->getCookieParams() instead'
+        -
+            superglobal: '$_SESSION'
+            message: 'use injected App\Util\Session instead'
+        -
+            superglobal: '$_FILES'
+            message: 'use $request->getUploadedFiles() instead'
+        -
+            superglobal: '$_SERVER'
+            message: 'use $request->getServerParams() instead'
+        -
+            superglobal: '$GLOBALS'
+            message: 'never use $GLOBALS'
+        -
+            superglobal: '$_ENV'
+            message: 'use $_ENV only in config/, Console/, or bootstrap files'
+            allowIn:
+                - '*/config/*'
+                - '*/src/Console/*'
+                - '*/src/Util/MigrationFileResolver.php'
+        -
+            superglobal: '$_SERVER'
+            message: 'use $request->getServerParams() instead'
+            allowIn:
+                - '*/src/Util/Session.php'
+        -
+            superglobal: '$_SESSION'
+            message: 'use injected App\Util\Session instead'
+            allowIn:
+                - '*/src/Util/Session.php'
+
+    disallowedMethodCalls:
+        -
+            method: 'PDO::query()'
+            message: 'use Doctrine DBAL parameterized queries instead (e.g. Connection::fetchAllAssociative, executeStatement)'
+        -
+            method: 'PDO::exec()'
+            message: 'use Doctrine DBAL instead (e.g. Connection::executeStatement)'
+        -
+            method: 'PDO::prepare()'
+            message: 'use Doctrine DBAL parameterized queries instead'
