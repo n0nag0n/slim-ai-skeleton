@@ -17,14 +17,8 @@ use App\Security\CorsMiddleware;
 use Psr\Container\ContainerInterface;
 
 return [
-    SessionInterface::class => DI\autowire(Session::class),
-    Session::class => function () {
-        static $session = null;
-        if ($session === null) {
-            $session = new Session();
-        }
-        return $session;
-    },
+    SessionInterface::class => DI\get(Session::class),
+    Session::class => DI\autowire(),
     Flash::class => DI\autowire(),
     Csrf::class => DI\autowire(),
     CsrfMiddleware::class => function (ContainerInterface $c) {

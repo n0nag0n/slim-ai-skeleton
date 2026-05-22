@@ -43,7 +43,7 @@
         "test:all": "composer test && composer test:integration",
         "migrate": "php console migrate",
         "lint": "phpcs --standard=phpcs.xml.dist",
-        "stan": "phpstan analyse --configuration=phpstan.neon.dist",
+        "stan": "php -d memory_limit=256M vendor/bin/phpstan analyse --configuration=phpstan.neon.dist",
         "cs-fix": "phpcbf --standard=phpcs.xml.dist",
         "sync-ai-instructions": "php console sync-ai-instructions"
     },

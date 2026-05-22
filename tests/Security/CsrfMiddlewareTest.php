@@ -106,6 +106,32 @@ class CsrfMiddlewareTest extends TestCase
         $this->assertEquals(403, $response->getStatusCode());
     }
 
+    public function testXDevBypassInDebugMode(): void
+    {
+        $middleware = new CsrfMiddleware($this->csrf, [], true);
+        $this->csrf->generate();
+        $request = (new ServerRequestFactory())->createServerRequest('POST', '/')
+            ->withHeader('X-Dev', '1');
+        $handler = $this->createPassthroughHandler();
+
+        $response = $middleware->process($request, $handler);
+
+        $this->assertEquals(200, $response->getStatusCode());
+    }
+
+    public function testXDevDoesNotBypassInProduction(): void
+    {
+        $middleware = new CsrfMiddleware($this->csrf, [], false);
+        $this->csrf->generate();
+        $request = (new ServerRequestFactory())->createServerRequest('POST', '/')
+            ->withHeader('X-Dev', '1');
+        $handler = $this->createPassthroughHandler();
+
+        $response = $middleware->process($request, $handler);
+
+        $this->assertEquals(403, $response->getStatusCode());
+    }
+
     private function createPassthroughHandler(): RequestHandlerInterface
     {
         return new class implements RequestHandlerInterface {

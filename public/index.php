@@ -56,40 +56,14 @@ $errorMiddleware->setDefaultErrorHandler(
     ) use (
         $app
     ) {
-        if ($displayErrorDetails) {
-            // In debug mode, X-Dev: 1 + Accept: application/json returns
-            // compact JSON with exception details instead of Tracy HTML
-            if ($request->getHeaderLine('X-Dev') === '1') {
-                $accept = $request->getHeaderLine('Accept');
-                if (!str_contains($accept, 'text/html')) {
-                    $debug = [
-                        'message' => $exception->getMessage(),
-                        'file' => $exception->getFile(),
-                        'line' => $exception->getLine(),
-                        'type' => $exception::class,
-                        'trace' => explode("\n", $exception->getTraceAsString()),
-                    ];
-                    $body = json_encode($debug, JSON_UNESCAPED_SLASHES);
-                    if ($body === false) {
-                        $body = '{"message":"Internal Server Error"}';
-                    }
-                    $response = $app->getResponseFactory()->createResponse(500);
-                    $response->getBody()->write($body);
-                    return $response->withHeader('Content-Type', 'application/json');
-                }
-            }
+        // X-Dev: 1 in debug mode → always JSON with trace, bypass Tracy
+        $xDev = $request->getHeaderLine('X-Dev');
 
+        if ($displayErrorDetails && $xDev !== '1') {
             throw $exception;
         }
 
-        $code = $exception instanceof \Slim\Exception\HttpException
-            ? $exception->getCode()
-            : 500;
-
-        if ($code < 400 || $code > 599) {
-            $code = 500;
-        }
-
+        // Log the error server-side regardless
         if ($logErrors) {
             error_log(sprintf(
                 '[%s] %s in %s:%d',
@@ -100,9 +74,19 @@ $errorMiddleware->setDefaultErrorHandler(
             ));
         }
 
-        $accept = $request->getHeaderLine('Accept');
+        $code = $exception instanceof \Slim\Exception\HttpException
+            ? $exception->getCode()
+            : 500;
 
-        if (str_contains($accept, 'text/html')) {
+        if ($code < 400 || $code > 599) {
+            $code = 500;
+        }
+
+        // X-Dev always gets compact JSON; otherwise content-negotiate
+        $accept = $request->getHeaderLine('Accept');
+        $wantsHtml = str_contains($accept, 'text/html');
+
+        if ($xDev !== '1' && $wantsHtml) {
             $twig = $app->getContainer()->get(\Slim\Views\Twig::class);
 
             if ($code === 404) {
@@ -118,7 +102,19 @@ $errorMiddleware->setDefaultErrorHandler(
             );
         }
 
-        $body = json_encode(['error' => 'Internal Server Error']);
+        $data = ['error' => 'Internal Server Error'];
+
+        if ($displayErrorDetails) {
+            $data = [
+                'message' => $exception->getMessage(),
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
+                'type' => $exception::class,
+                'trace' => explode("\n", $exception->getTraceAsString()),
+            ];
+        }
+
+        $body = json_encode($data, JSON_UNESCAPED_SLASHES);
         if ($body === false) {
             $body = '{"error":"Internal Server Error"}';
         }

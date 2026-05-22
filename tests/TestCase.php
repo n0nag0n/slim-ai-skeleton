@@ -7,6 +7,7 @@ namespace App\Test;
 use DI\ContainerBuilder;
 use DI\Bridge\Slim\Bridge;
 use Doctrine\DBAL\Connection;
+use App\Util\MigrationFileResolver;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use Slim\App;
 use Slim\Psr7\Factory\ServerRequestFactory;
@@ -53,7 +54,14 @@ class TestCase extends PHPUnitTestCase
         sort($files);
 
         foreach ($files as $file) {
-            $sql = file_get_contents($file);
+            $version = basename($file);
+
+            if (str_ends_with($version, '.mysql.sql') || str_ends_with($version, '.pgsql.sql')) {
+                continue;
+            }
+
+            $sqlFile = MigrationFileResolver::resolve($file);
+            $sql = file_get_contents($sqlFile);
             $this->conn->executeStatement($sql);
         }
     }

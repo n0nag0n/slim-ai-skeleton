@@ -342,7 +342,7 @@ The error handler in `public/index.php`:
 - **Debug mode** (`DEBUG_MODE=true`): Throws the exception for Tracy to handle (beautiful debug page). Use `X-Dev: 1` header to get compact JSON instead.
 - **Production**: Content-negotiated. `Accept: text/html` → Twig error page. Otherwise → JSON.
 
-When curling the dev server for debugging, DON'T parse the HTML output. If you need to check an error response in production mode, set `DEBUG_MODE=false` in `.env` and use `curl -H "Accept: application/json"`.
+When curling the dev server for debugging, DON'T parse the HTML output. Use `curl -H "Accept: application/json" -H "X-Dev: 1"` to get compact JSON errors with file/line/trace in debug mode. The `X-Dev: 1` header also bypasses CSRF validation — see the Debugging section.
 
 ### Live Testing
 
@@ -433,7 +433,7 @@ These are conventions, not enforced by the framework. Controllers return respons
 Migrations are timestamped SQL files in `migrations/`. Run them with:
 
 ```bash
-php migrate
+php console migrate
 # or
 composer migrate
 ```
@@ -441,6 +441,32 @@ composer migrate
 The runner tracks executed migrations in a `_migrations` table. SQLite by default.
 
 To add a migration: create `migrations/YYYYMMDD_HHMMSS_description.sql` with raw SQL.
+
+#### Driver-Specific Overrides
+
+The migration runner supports database-specific SQL files. For any migration `001_create_posts.sql`, you can add a driver-specific variant:
+
+| File | Runs when |
+|------|-----------|
+| `001_create_posts.sql` | Default / SQLite (always runs if no override matches) |
+| `001_create_posts.mysql.sql` | `DB_DRIVER=pdo_mysql` or `pdo_mariadb` |
+| `001_create_posts.pgsql.sql` | `DB_DRIVER=pdo_pgsql` |
+
+Use overrides when a DDL difference is unavoidable (e.g. `LONGTEXT` vs `TEXT`, `AUTO_INCREMENT` vs `INTEGER PRIMARY KEY`, `ENUM` vs `VARCHAR`). Keep the base `.sql` SQLite-compatible for unit tests.
+
+#### Inline SQL Convention
+
+When writing SQL inside PHP files (models, controllers), always use **nowdoc** syntax (`<<<'SQL'`) to avoid PHP string quoting conflicts:
+
+```php
+<<<'SQL'
+SELECT COUNT(*) as total,
+  SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END) as done
+FROM tasks WHERE project_id = ?
+SQL
+```
+
+Nowdoc prevents variable interpolation and eliminates quote escaping errors (SQL's `'` won't conflict with PHP's `'`).
 
 ### CLI Commands
 
@@ -651,7 +677,26 @@ composer lint && composer stan && composer test
 1. **Flat files, not folders.** I find things faster in a shallow tree.
 2. **Tests I can copy-paste.** A good test file is a template for the next 20 tests I'll write. `tests/Model/ExampleModelTest.php` is the model test template.
 3. **DBAL, not raw PDO.** Named parameters, query builder, schema introspection — I know this API well.
-4. **JSON for debugging.** When you curl the server, use `application/json` accept header. HTML error pages are massive and full of JS/CSS noise.
+4. **JSON for debugging.** When you curl the server, use `application/json` accept header. HTML error pages are massive and full of JS/CSS noise. For even faster debugging, pass `-H "X-Dev: 1"` to bypass CSRF and get compact JSON errors with trace details.
+
+## Debugging
+
+The `X-Dev: 1` request header is a debug-only shortcut that makes API testing faster:
+
+- **Bypasses CSRF validation** — send POST/PUT/DELETE without a token
+- **Forces JSON error responses** — no Tracy HTML pages, compact JSON with file/line/trace
+- **Activates only when `DEBUG_MODE=true`** — completely ignored in production
+
+Usage:
+
+```bash
+# Debug an API endpoint with JSON error responses + CSRF bypass
+curl -X POST http://localhost:8080/api/resource \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -H "X-Dev: 1" \
+  -d '{"title":"test"}'
+```
 
 ## Security Standards
 
@@ -707,6 +752,12 @@ If you need to loosen CSP for a legitimate reason (e.g., embedding a third-party
 ### CSRF Protection
 
 `App\Security\CsrfMiddleware` is registered in `public/index.php` after body parsing and protects all `POST`, `PUT`, `DELETE`, and `PATCH` routes. It checks for a token in the `X-CSRF-Token` header first, then falls back to `csrf_token` in the parsed body or form-encoded body.
+
+To exclude specific URL path prefixes from CSRF (e.g. API routes), set `CSRF_EXCLUDED_PATHS` in `.env`:
+
+```
+CSRF_EXCLUDED_PATHS=/api,/health
+```
 
 Use `App\Util\Csrf` in controllers when you need to validate or regenerate tokens:
 

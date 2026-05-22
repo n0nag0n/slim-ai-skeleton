@@ -14,6 +14,7 @@ class MigrateTest extends TestCase
     private string $origDbPath;
     private string $origDbDriver;
     private string $tempMigration;
+    private string $tempOverride;
 
     protected function setUp(): void
     {
@@ -25,6 +26,8 @@ class MigrateTest extends TestCase
 
         $this->tempMigration = dirname(__DIR__, 2) . '/migrations/0000_00_00_000000_test.sql';
         file_put_contents($this->tempMigration, 'CREATE TABLE test_migration (id INTEGER);');
+
+        $this->tempOverride = dirname(__DIR__, 2) . '/migrations/0000_00_00_000000_test.mysql.sql';
     }
 
     protected function tearDown(): void
@@ -36,6 +39,9 @@ class MigrateTest extends TestCase
         }
         if (file_exists($this->tempMigration)) {
             unlink($this->tempMigration);
+        }
+        if (file_exists($this->tempOverride)) {
+            unlink($this->tempOverride);
         }
     }
 
@@ -67,5 +73,38 @@ class MigrateTest extends TestCase
 
         $this->assertSame(0, $exitCode);
         $this->assertStringContainsString('Nothing to migrate', $output);
+    }
+
+    public function testUsesDriverOverrideWhenPresent(): void
+    {
+        file_put_contents($this->tempOverride, 'CREATE TABLE override_test (id INTEGER, title VARCHAR(255));');
+        // Still on pdo_sqlite, so the base .sql should run (not the override)
+
+        $container = (new ContainerBuilder())->build();
+        $command = new Migrate();
+
+        ob_start();
+        $exitCode = $command->execute([], $container);
+        $output = ob_get_clean();
+
+        $this->assertSame(0, $exitCode);
+        $this->assertStringContainsString('Migrated:', $output);
+        $this->assertStringNotContainsString('via', $output);
+    }
+
+    public function testDriverOverrideFilesSkippedFromBaseScan(): void
+    {
+        file_put_contents($this->tempOverride, 'CREATE TABLE orphan (id INTEGER);');
+
+        $container = (new ContainerBuilder())->build();
+        $command = new Migrate();
+
+        ob_start();
+        $command->execute([], $container);
+        $output = ob_get_clean();
+
+        // Should show exactly one migration (the base .sql), not two
+        $this->assertSame(1, substr_count($output, 'Migrated:'));
+        $this->assertStringContainsString('Migrated: 0000_00_00_000000_test.sql', $output);
     }
 }

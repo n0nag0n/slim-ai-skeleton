@@ -6,6 +6,7 @@ namespace App\Console;
 
 use DI\Container;
 use Doctrine\DBAL\DriverManager;
+use App\Util\MigrationFileResolver;
 
 class Migrate implements CommandInterface
 {
@@ -51,20 +52,34 @@ class Migrate implements CommandInterface
         foreach ($files as $file) {
             $version = basename($file);
 
+            // Skip driver-specific override files — the base .sql handles them
+            if (str_ends_with($version, '.mysql.sql') || str_ends_with($version, '.pgsql.sql')) {
+                continue;
+            }
+
             if (in_array($version, $executed)) {
                 echo "Skipped: {$version}\n";
                 continue;
             }
 
-            $sql = file_get_contents($file);
+            // Resolve to driver-specific override if one exists
+            $sqlFile = MigrationFileResolver::resolve($file);
+
+            $sql = file_get_contents($sqlFile);
             if ($sql === false) {
                 echo "Error reading: {$version}\n";
                 continue;
             }
             $conn->executeStatement($sql);
+
+            // Track using the base filename so driver-switching doesn't re-run
             $conn->insert('_migrations', ['version' => $version]);
 
-            echo "Migrated: {$version}\n";
+            if ($sqlFile !== $file) {
+                echo "Migrated: {$version} (via " . basename($sqlFile) . ")\n";
+            } else {
+                echo "Migrated: {$version}\n";
+            }
             $count++;
         }
 

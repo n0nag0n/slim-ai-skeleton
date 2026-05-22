@@ -12,6 +12,7 @@ class MakeControllerTest extends TestCase
 {
     private string $controllerPath;
     private string $testPath;
+    private string $templateDir;
     private string $name;
 
     protected function setUp(): void
@@ -20,6 +21,7 @@ class MakeControllerTest extends TestCase
         $root = dirname(__DIR__, 2);
         $this->controllerPath = $root . '/src/Controller/' . $this->name . 'Controller.php';
         $this->testPath = $root . '/tests/Controller/' . $this->name . 'ControllerTest.php';
+        $this->templateDir = $root . '/templates/' . lcfirst($this->name);
     }
 
     protected function tearDown(): void
@@ -29,6 +31,15 @@ class MakeControllerTest extends TestCase
         }
         if (file_exists($this->testPath)) {
             unlink($this->testPath);
+        }
+        if (is_dir($this->templateDir)) {
+            $files = glob($this->templateDir . '/*.twig');
+            if ($files !== false) {
+                foreach ($files as $file) {
+                    unlink($file);
+                }
+            }
+            rmdir($this->templateDir);
         }
     }
 
