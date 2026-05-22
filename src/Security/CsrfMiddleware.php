@@ -16,6 +16,7 @@ class CsrfMiddleware implements MiddlewareInterface
     public function __construct(
         private Csrf $csrf,
         private array $excludedPaths = [],
+        private bool $debug = false,
     ) {
     }
 
@@ -28,6 +29,13 @@ class CsrfMiddleware implements MiddlewareInterface
         }
 
         $path = $request->getUri()->getPath();
+
+        // Debug-only bypass: X-Dev: 1 skips CSRF validation
+        $devHeader = $request->getHeaderLine('X-Dev');
+        if ($this->debug && $devHeader === '1') {
+            return $handler->handle($request);
+        }
+
         foreach ($this->excludedPaths as $excluded) {
             if (str_starts_with($path, $excluded)) {
                 return $handler->handle($request);

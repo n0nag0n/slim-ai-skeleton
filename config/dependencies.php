@@ -16,11 +16,16 @@ use App\Security\CsrfMiddleware;
 use App\Security\CorsMiddleware;
 
 return [
-    SessionInterface::class => DI\autowire(Session::class),
+    SessionInterface::class => DI\get(Session::class),
     Session::class => DI\autowire(),
     Flash::class => DI\autowire(),
     Csrf::class => DI\autowire(),
-    CsrfMiddleware::class => DI\autowire(),
+
+    CsrfMiddleware::class => function ($container) {
+        $debug = filter_var($_ENV['DEBUG_MODE'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $excludedPaths = array_filter(explode(',', $_ENV['CSRF_EXCLUDED_PATHS'] ?? ''));
+        return new CsrfMiddleware($container->get(Csrf::class), $excludedPaths, $debug);
+    },
 
     CorsMiddleware::class => function () {
         $default = 'http://localhost:8080,http://localhost:5173,http://localhost:4200,http://127.0.0.1:8080';

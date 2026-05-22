@@ -56,7 +56,10 @@ $errorMiddleware->setDefaultErrorHandler(
     ) use (
         $app
     ) {
-        if ($displayErrorDetails) {
+        $xDev = $request->getHeaderLine('X-Dev');
+
+        // Debug mode (no X-Dev) → let Tracy render the full debug page
+        if ($displayErrorDetails && $xDev !== '1') {
             throw $exception;
         }
 
@@ -79,8 +82,10 @@ $errorMiddleware->setDefaultErrorHandler(
         }
 
         $accept = $request->getHeaderLine('Accept');
+        $wantsHtml = str_contains($accept, 'text/html');
 
-        if (str_contains($accept, 'text/html')) {
+        // X-Dev always returns JSON; otherwise content-negotiate
+        if ($xDev !== '1' && $wantsHtml) {
             $twig = $app->getContainer()->get(\Slim\Views\Twig::class);
 
             if ($code === 404) {
@@ -96,7 +101,25 @@ $errorMiddleware->setDefaultErrorHandler(
             );
         }
 
-        $body = json_encode(['error' => 'Internal Server Error']);
+        // JSON response
+        $data = ['error' => 'Internal Server Error'];
+
+        if ($displayErrorDetails) {
+            $data['error'] = $exception->getMessage();
+            $data['file'] = $exception->getFile();
+            $data['line'] = $exception->getLine();
+            $data['trace'] = array_map(
+                fn(array $t) => [
+                    'file' => $t['file'] ?? null,
+                    'line' => $t['line'] ?? null,
+                    'function' => $t['function'] ?? null,
+                    'class' => $t['class'] ?? null,
+                ],
+                $exception->getTrace()
+            );
+        }
+
+        $body = json_encode($data, JSON_UNESCAPED_SLASHES);
         if ($body === false) {
             $body = '{"error":"Internal Server Error"}';
         }
