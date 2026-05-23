@@ -67,3 +67,21 @@ parameters:
         -
             method: 'PDO::prepare()'
             message: 'use Doctrine DBAL parameterized queries instead'
+
+    disallowedFunctionCalls:
+        -
+            function: 'exec()'
+            allowIn:
+                - '*/src/Console/*'
+        -
+            function: 'passthru()'
+            allowIn:
+                - '*/src/Console/*'
+        -
+            function: 'shell_exec()'
+            allowIn:
+                - '*/src/Console/*'
+        -
+            function: 'system()'
+            allowIn:
+                - '*/src/Console/*'
