@@ -466,6 +466,8 @@ PHPStan (via `spaze/phpstan-disallowed-calls`) enforces security rules at `compo
 
 The bundled configs included in `phpstan.neon.dist` cover the common cases. The rules also support `allowIn` and `allowInMethods` for legitimate exceptions (e.g. `$_ENV` in config files, `$_SESSION` in the Session wrapper).
 
+Do not alter `phpstan.neon.dist`, `phpcs.xml.dist`, or any security rule configuration without explicit permission. If a disallowed function is needed, write a wrapper class (like `ShellRunner` for shell execution) and add a narrow `allowIn` for that single file only — never open a broad path.
+
 Additionally, `composer security:check` scans `composer.lock` against the Security Advisories database for known CVEs in dependencies. See `SECURITY.md` for the vulnerability triage workflow.
 
 ### Security Headers

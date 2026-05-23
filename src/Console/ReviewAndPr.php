@@ -15,6 +15,10 @@ class ReviewAndPr implements CommandInterface
         ['command' => 'composer test', 'label' => 'Tests'],
     ];
 
+    public function __construct(private ShellRunner $shell)
+    {
+    }
+
     /**
      * @param array<int, string> $args
      */
@@ -28,10 +32,10 @@ class ReviewAndPr implements CommandInterface
         $allPassed = true;
         foreach ($this->checks as $check) {
             echo "[{$check['label']}] Running...\n";
-            passthru($check['command'], $exitCode);
-            if ($exitCode !== 0) {
+            $result = $this->shell->run($check['command']);
+            if ($result['exit_code'] !== 0) {
                 $allPassed = false;
-                echo "[{$check['label']}] FAILED (exit {$exitCode})\n\n";
+                echo "[{$check['label']}] FAILED (exit {$result['exit_code']})\n\n";
                 break;
             }
             echo "[{$check['label']}] PASSED\n\n";
@@ -45,10 +49,8 @@ class ReviewAndPr implements CommandInterface
         echo "All checks passed.\n\n";
 
         // Verify uncommitted changes exist
-        $statusOutput = [];
-        $statusCode = 0;
-        exec('git status --porcelain', $statusOutput, $statusCode);
-        if ($statusCode !== 0 || count($statusOutput) === 0) {
+        $result = $this->shell->capture('git status --porcelain');
+        if ($result['exit_code'] !== 0 || count($result['output']) === 0) {
             echo "No uncommitted changes to commit.\n";
             return 1;
         }
@@ -74,36 +76,36 @@ class ReviewAndPr implements CommandInterface
         }
 
         // Create branch
-        passthru("git checkout -b " . escapeshellarg($branch), $exitCode);
-        if ($exitCode !== 0) {
+        $result = $this->shell->run("git checkout -b " . escapeshellarg($branch));
+        if ($result['exit_code'] !== 0) {
             echo "Failed to create branch. It may already exist.\n";
             return 1;
         }
 
         // Stage everything
-        passthru('git add -A', $exitCode);
-        if ($exitCode !== 0) {
+        $result = $this->shell->run('git add -A');
+        if ($result['exit_code'] !== 0) {
             echo "Failed to stage changes.\n";
             return 1;
         }
 
         // Commit
-        passthru('git commit -m ' . escapeshellarg($message), $exitCode);
-        if ($exitCode !== 0) {
+        $result = $this->shell->run('git commit -m ' . escapeshellarg($message));
+        if ($result['exit_code'] !== 0) {
             echo "Failed to commit.\n";
             return 1;
         }
 
         // Push
-        passthru('git push -u origin ' . escapeshellarg($branch), $exitCode);
-        if ($exitCode !== 0) {
+        $result = $this->shell->run('git push -u origin ' . escapeshellarg($branch));
+        if ($result['exit_code'] !== 0) {
             echo "Failed to push branch.\n";
             return 1;
         }
 
         // Create PR
-        passthru('gh pr create --fill', $exitCode);
-        if ($exitCode !== 0) {
+        $result = $this->shell->run('gh pr create --fill');
+        if ($result['exit_code'] !== 0) {
             echo "Failed to create PR via gh CLI.\n";
             echo "Run manually: gh pr create --base main --head " . escapeshellarg($branch) . "\n";
             return 1;

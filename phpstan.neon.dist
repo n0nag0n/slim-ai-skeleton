@@ -72,16 +72,10 @@ parameters:
         -
             function: 'exec()'
             allowIn:
-                - '*/src/Console/*'
+                - '*/src/Console/ShellRunner.php'
         -
             function: 'passthru()'
             allowIn:
-                - '*/src/Console/*'
-        -
-            function: 'shell_exec()'
-            allowIn:
-                - '*/src/Console/*'
-        -
-            function: 'system()'
-            allowIn:
-                - '*/src/Console/*'
+                - '*/src/Console/ShellRunner.php'
+
+    
