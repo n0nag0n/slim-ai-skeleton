@@ -51,7 +51,7 @@ abstract class ExtensionBase
 
     protected function loadTemplate(string $name, array $vars): string
     {
-        $path = dirname(__DIR__, 2) . '/templates/tracy/' . $name;
+        $path = dirname(__DIR__, 3) . '/templates/tracy/' . $name;
         $content = file_get_contents($path);
         foreach ($vars as $key => $value) {
             $content = str_replace('{{' . $key . '}}', (string) $value, $content);
