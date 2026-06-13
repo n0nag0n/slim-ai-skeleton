@@ -19,6 +19,23 @@ return function (App $app) {
 
     $debug = filter_var($_ENV['DEBUG_MODE'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
+    // When TRUSTED_PROXIES is set, a bootstrap patch in public/index.php has
+    // already normalized $_SERVER for Session cookies and Slim request creation.
+    // The PSR-7 request object will usually be born correct; add client_ip
+    // attribute here for logging / future use if headers are present.
+    if (($_ENV['TRUSTED_PROXIES'] ?? '') !== '') {
+        $app->add(function ($request, $handler) {
+            $for = $request->getHeaderLine('X-Forwarded-For');
+            if ($for !== '') {
+                $client = trim(explode(',', $for)[0]);
+                if ($client !== '') {
+                    $request = $request->withAttribute('client_ip', $client);
+                }
+            }
+            return $handler->handle($request);
+        });
+    }
+
     // CORS outermost — handles OPTIONS preflight before anything else
     $app->add($container->get(CorsMiddleware::class));
 

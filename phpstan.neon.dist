@@ -46,11 +46,13 @@ parameters:
                 - '*/config/*'
                 - '*/src/Console/*'
                 - '*/src/Util/MigrationFileResolver.php'
+                - '*/src/Security/TrustedProxy.php'
         -
             superglobal: '$_SERVER'
             message: 'use $request->getServerParams() instead'
             allowIn:
                 - '*/src/Util/Session.php'
+                - '*/src/Security/TrustedProxy.php'
         -
             superglobal: '$_SESSION'
             message: 'use injected App\Util\Session instead'

@@ -9,6 +9,11 @@ require_once $rootPath . '/vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable($rootPath);
 $dotenv->safeLoad();
 
+// Normalize X-Forwarded-* headers from trusted reverse proxies (nginx etc.)
+// so that Session secure cookies, request scheme, and client IP are correct.
+// Opt-in by setting TRUSTED_PROXIES in .env (see .env.example).
+\App\Security\TrustedProxy::configure();
+
 $debug = filter_var($_ENV['DEBUG_MODE'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
 if ($debug) {
