@@ -20,5 +20,7 @@ class HealthControllerTest extends TestCase
         $body = json_decode((string) $response->getBody(), true);
         $this->assertEquals('ok', $body['status']);
         $this->assertArrayHasKey('time', $body);
+        $this->assertArrayHasKey('checks', $body);
+        $this->assertEquals('ok', $body['checks']['database'] ?? null);
     }
 }

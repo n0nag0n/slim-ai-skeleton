@@ -158,6 +158,7 @@ Here's how to add a new page at `/hello`:
 |----------|---------|-------------|
 | `APP_ENV` | `dev` | Set to `production` when deploying |
 | `DEBUG_MODE` | `true` | Shows the Tracy debug bar. Turn off in production. |
+| `TRUSTED_PROXIES` | (empty) | Comma list of reverse proxy IPs (or `*`) when PHP is behind nginx/Caddy/etc. Fixes scheme, secure cookies, and client IP. |
 | `DB_DRIVER` | `pdo_sqlite` | Database driver (`pdo_mysql`, `pdo_pgsql`, etc.) |
 | `DB_PATH` | `var/database.sqlite` | Where the SQLite database file lives |
 | `CSRF_EXCLUDED_PATHS` | — | Comma-separated URL path prefixes to skip CSRF checks (e.g. `/api,/health`) |

@@ -531,6 +531,24 @@ To add or remove allowed origins, set the `ALLOWED_ORIGINS` environment variable
 ALLOWED_ORIGINS=http://localhost:8080,http://localhost:5173
 ```
 
+### Trusted Reverse Proxies (nginx etc.)
+
+When the app runs behind a reverse proxy (typical nginx + PHP-FPM or nginx proxying to the built-in server), set `TRUSTED_PROXIES` so the framework sees the real scheme, host, and client IP:
+
+```
+TRUSTED_PROXIES=127.0.0.1,::1
+# or TRUSTED_PROXIES=*   (when you fully control the only caller, e.g. internal docker network)
+```
+
+This is read in `public/index.php` (very early) and affects:
+- `App\Util\Session` secure cookie flag (reads `$_SERVER['HTTPS']`)
+- Slim request URI scheme/host
+- `client_ip` attribute on the request (when `X-Forwarded-For` present)
+
+The implementation lives in `src/Security/TrustedProxy.php` (bootstrap normalization + small middleware for the attribute). No new dependencies. Pair it with the standard nginx `proxy_set_header X-Forwarded-*` directives.
+
+The default `/health` endpoint now performs a cheap `SELECT 1` against the DB and reports per-component status (`status`, `checks.database`). The Docker healthcheck in `docker-compose.yml` relies on it returning HTTP 200.
+
 The middleware reads this env var at boot time via `config/dependencies.php`.
 
 ### Password Hashing
