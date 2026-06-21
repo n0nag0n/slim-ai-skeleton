@@ -5,3 +5,4 @@
 /tmp/
 .env
 .phpunit*
+adminer.php

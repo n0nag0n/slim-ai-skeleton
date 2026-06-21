@@ -14,6 +14,7 @@ use App\Console\Help;
 use App\Console\Migrate;
 use App\Console\DbSeed;
 use App\Console\ReviewAndPr;
+use App\Console\InstallAdminer;
 
 return [
     'make:controller' => ['class' => MakeController::class, 'description' => 'Scaffold a new controller + test'],
@@ -31,6 +32,10 @@ return [
     'review:pr' => [
         'class' => ReviewAndPr::class,
         'description' => 'Run lint/stan/test, then create branch + commit + PR',
+    ],
+    'adminer:install' => [
+        'class' => InstallAdminer::class,
+        'description' => 'Download Adminer to public/adminer.php (mysql|sqlite)',
     ],
     'help' => ['class' => Help::class, 'description' => 'Display available commands'],
 ];
