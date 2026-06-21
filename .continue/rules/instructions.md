@@ -350,6 +350,7 @@ php console route:list              # Show registered routes
 php console sync-ai-instructions    # Sync AGENTS.md to all AI configs
 php console review:pr <branch> <msg>  # Run checks, create branch, commit, PR
 php console db:seed                 # Run all database seeders
+php console adminer:install <mysql|sqlite>  # Download Adminer to public/adminer.php
 composer security:check            # Scan composer.lock for known CVEs
 ```
 

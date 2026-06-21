@@ -28,7 +28,7 @@ ready to go. Everything is set up so you can start adding your own pages and fea
 - **Flash messages** — one-request survival messages for form submission feedback via `App\Util\Flash`
 - **Validation** — method-chaining input validation with `App\Util\Validator` (required, email, length, matches, etc.)
 - **Pagination** — offset/limit calculator with `App\Util\Pagination` for list endpoints
-- **CLI console** — `php console` with commands to scaffold controllers, models, migrations, and more
+- **CLI console** — `php console` with commands to scaffold controllers, models, migrations, install Adminer, and more
 - **Tracy** — a debug bar with panels for requests, responses, routes, sessions, and database queries
 - **PHPUnit** — testing framework to make sure your code works
 - **PHPStan** — static analysis to catch bugs before runtime
@@ -80,6 +80,8 @@ Open `http://localhost:8080` in your browser. You should see the homepage.
 | `composer migrate` | Run pending database migrations |
 | `composer security:check` | Scan dependencies for known vulnerabilities |
 | `php console` | List all CLI commands (scaffolding, cache, routes) |
+| `php console adminer:install mysql` | Download Adminer for MySQL/MariaDB to `public/adminer.php` |
+| `php console adminer:install sqlite` | Download modified SQLite Adminer (no credentials) to `public/adminer.php` |
 | `composer sync-ai-instructions` | Sync AGENTS.md to AI tool config files |
 
 ## Your first new page
