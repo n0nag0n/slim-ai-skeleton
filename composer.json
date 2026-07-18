@@ -39,6 +39,9 @@
             "cp -n .env.example .env || true",
             "mkdir -p var/log"
         ],
+        "post-create-project-cmd": [
+            "php console setup:ai-agent"
+        ],
         "start": "COMPOSER_PROCESS_TIMEOUT=0 php -S localhost:8080 -t public",
         "test": "phpunit",
         "test:unit": "phpunit",
