@@ -5,16 +5,11 @@
 *.php text eol=lf
 *.sh text eol=lf
 
-# Exclude these from git archive / composer create-project tarballs
-/.github/ export-ignore
-/.gitattributes export-ignore
-/.gitignore export-ignore
-/.notes/ export-ignore
-/.agents/ export-ignore
-/cline_docs/ export-ignore
-/.cursor/ export-ignore
-/.continue/ export-ignore
-/tests/ export-ignore
+# Exclude only runtime/generated artifacts from git archive /
+# composer create-project tarballs. Framework files (.gitignore,
+# tests/, .notes/, .agents/) and AI instruction configs (.github/
+# copilot-instructions.md, .cursor/, .continue/, cline_docs/, etc.)
+# ship with the skeleton — that is the product.
 /var/ export-ignore
 .phpunit.result.cache export-ignore
 *.sqlite export-ignore
