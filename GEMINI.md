@@ -347,7 +347,8 @@ php console make:migration <desc>   # Create a blank migration file
 php console make:seeder <Name>      # Scaffold a database seeder
 php console cache:clear             # Clear Twig/DI cache
 php console route:list              # Show registered routes
-php console sync-ai-instructions    # Sync AGENTS.md to all AI configs
+php console setup:ai-agent [agent]  # Pick AI agent; prune other instruction files
+php console sync-ai-instructions    # Sync AGENTS.md to all AI configs (maintainers)
 php console review:pr <branch> <msg>  # Run checks, create branch, commit, PR
 php console db:seed                 # Run all database seeders
 php console adminer:install <mysql|sqlite>  # Download Adminer to public/adminer.php
@@ -359,15 +360,21 @@ To add a new command:
 2. Register it in `config/console.php`.
 3. The `execute()` method receives `(array $args, Container $container)`.
 
-### Syncing AI Configs
+### AI Agent Instruction Files
 
-`AGENTS.md` is the source of truth. Copies are mirrored to Claude, Copilot,
-Gemini, Cursor, Windsurf, Continue, and Cline config files. After editing
-`AGENTS.md` (root or nested), run:
+`AGENTS.md` is the source of truth. In this skeleton repo, copies are mirrored to
+Claude, Copilot, Gemini, Cursor, Windsurf, Continue, and Cline config files.
+After editing `AGENTS.md` (root or nested), run:
 
 ```bash
 composer sync-ai-instructions
 ```
+
+On `composer create-project`, `setup:ai-agent` runs automatically: the user picks
+one AI agent, only that tool's instruction file is kept (plus `AGENTS.md`), and
+the `sync-ai-instructions` command is removed from the new project (consumers
+only need one agent file). Non-interactive installs keep `AGENTS.md` only.
+Re-run later with `php console setup:ai-agent <claude|cursor|...|none>`.
 
 ## Where Context Lives
 

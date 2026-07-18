@@ -66,6 +66,18 @@ composer migrate
 composer start
 ```
 
+During `create-project` you will be asked which AI coding agent you use (Claude Code,
+Cursor, Copilot, etc.). Only that agent's instruction file is kept (plus `AGENTS.md`);
+unused agent files and the multi-tool `sync-ai-instructions` command are removed.
+
+Non-interactive installs keep `AGENTS.md` only. To pick an agent without a prompt:
+
+```bash
+AI_AGENT=claude composer create-project n0nag0n/slim-ai-skeleton my-project
+# or after create-project:
+php console setup:ai-agent claude
+```
+
 Open `http://localhost:8080` in your browser. You should see the homepage.
 
 ## Commands
@@ -82,7 +94,8 @@ Open `http://localhost:8080` in your browser. You should see the homepage.
 | `php console` | List all CLI commands (scaffolding, cache, routes) |
 | `php console adminer:install mysql` | Download Adminer for MySQL/MariaDB to `public/adminer.php` |
 | `php console adminer:install sqlite` | Download modified SQLite Adminer (no credentials) to `public/adminer.php` |
-| `composer sync-ai-instructions` | Sync AGENTS.md to AI tool config files |
+| `php console setup:ai-agent [agent]` | Pick AI agent; keep its instruction file (runs on create-project) |
+| `composer sync-ai-instructions` | Sync AGENTS.md to all AI tool configs (skeleton maintainers) |
 
 ## Your first new page
 

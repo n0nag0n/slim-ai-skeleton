@@ -10,6 +10,7 @@ use App\Console\MakeSeeder;
 use App\Console\CacheClear;
 use App\Console\RouteList;
 use App\Console\SyncAiInstructions;
+use App\Console\SetupAiAgent;
 use App\Console\Help;
 use App\Console\Migrate;
 use App\Console\DbSeed;
@@ -23,6 +24,10 @@ return [
     'make:seeder' => ['class' => MakeSeeder::class, 'description' => 'Scaffold a new database seeder'],
     'cache:clear' => ['class' => CacheClear::class, 'description' => 'Clear Twig and DI container cache'],
     'route:list' => ['class' => RouteList::class, 'description' => 'List all registered routes'],
+    'setup:ai-agent' => [
+        'class' => SetupAiAgent::class,
+        'description' => 'Pick AI agent; keep its instruction file and remove sync command',
+    ],
     'sync-ai-instructions' => [
         'class' => SyncAiInstructions::class,
         'description' => 'Sync AGENTS.md to all AI config files',
