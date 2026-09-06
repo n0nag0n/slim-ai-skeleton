@@ -15,7 +15,6 @@ class SyncAiInstructions implements CommandInterface
         'GEMINI.md',
         '.cursorrules',
         '.windsurfrules',
-        '.continue/rules/instructions.md',
         'cline_docs/CONTEXT.md',
     ];
 

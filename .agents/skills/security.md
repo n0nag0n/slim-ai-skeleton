@@ -108,5 +108,5 @@ feature, wrap it in the same `$debug` check.
 After any change that touches security-relevant code (error handling, input
 validation, sessions, authentication, CSP headers), verify:
 ```bash
-composer lint && composer stan && composer test
+composer stan && composer test
 ```

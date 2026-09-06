@@ -33,7 +33,7 @@ Every dependency is a liability. Before adding one:
 - Never add a framework for something a 10-line function handles
 
 Current prod deps: slim, slim/psr7, php-di/slim-bridge, phpdotenv, doctrine/dbal, tracy, slim/twig-view. This is the ceiling, not the floor.
-Dev deps: phpunit, phpstan, phpcs, spaze/phpstan-disallowed-calls, enlightn/security-checker.
+Dev deps: phpunit, phpstan, spaze/phpstan-disallowed-calls, enlightn/security-checker.
 
 ### 3. No Magic
 
@@ -142,7 +142,7 @@ public/index.php
    ```
 3. Create `templates/example.twig`.
 4. Write a test in `tests/Controller/ExampleControllerTest.php`.
-5. Run `composer lint && composer stan && composer test`.
+5. Run `composer stan && composer test`.
 
 ### Adding a Database Query
 
@@ -363,7 +363,7 @@ To add a new command:
 ### AI Agent Instruction Files
 
 `AGENTS.md` is the source of truth. In this skeleton repo, copies are mirrored to
-Claude, Copilot, Gemini, Cursor, Windsurf, Continue, and Cline config files.
+Claude, Copilot, Gemini, Cursor, Windsurf, and Cline config files.
 After editing `AGENTS.md` (root or nested), run:
 
 ```bash
@@ -474,7 +474,7 @@ PHPStan (via `spaze/phpstan-disallowed-calls`) enforces security rules at `compo
 
 The bundled configs included in `phpstan.neon.dist` cover the common cases. The rules also support `allowIn` and `allowInMethods` for legitimate exceptions (e.g. `$_ENV` in config files, `$_SESSION` in the Session wrapper).
 
-Do not alter `phpstan.neon.dist`, `phpcs.xml.dist`, or any security rule configuration without explicit permission. If a disallowed function is needed, write a wrapper class (like `ShellRunner` for shell execution) and add a narrow `allowIn` for that single file only — never open a broad path.
+Do not alter `phpstan.neon.dist` or any security rule configuration without explicit permission. If a disallowed function is needed, write a wrapper class (like `ShellRunner` for shell execution) and add a narrow `allowIn` for that single file only — never open a broad path.
 
 Additionally, `composer security:check` scans `composer.lock` against the Security Advisories database for known CVEs in dependencies. See `SECURITY.md` for the vulnerability triage workflow.
 
@@ -604,7 +604,7 @@ All Tracy-related code (middleware, panels, query logger) is gated behind `DEBUG
 After any change that touches security-relevant code (error handling, input validation, sessions, authentication, CSP headers), verify:
 
 ```bash
-composer lint && composer stan && composer test && composer security:check
+composer stan && composer test && composer security:check
 ```
 
 Or use the automation:

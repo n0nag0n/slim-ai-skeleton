@@ -4,9 +4,8 @@ These rules apply to all files under `src/` and tests under `tests/`.
 
 ## Type Declarations
 
-Every PHP file must begin with `declare(strict_types=1);` -- enforced by
-phpcs. This eliminates type coercion ambiguity and makes method signatures
-fully reliable.
+Every PHP file must begin with `declare(strict_types=1);`. This eliminates
+type coercion ambiguity and makes method signatures fully reliable.
 
 Name methods and classes so they are self-documenting. A name like
 `findByStatus(string $status): array` needs no docblock -- the type

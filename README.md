@@ -86,9 +86,7 @@ Open `http://localhost:8080` in your browser. You should see the homepage.
 |---------|-------------|
 | `composer start` | Start the development server on port 8080 |
 | `composer test` | Run all tests |
-| `composer lint` | Check code style with PHP_CodeSniffer |
 | `composer stan` | Run PHPStan static analysis |
-| `composer cs-fix` | Auto-fix code style issues |
 | `composer migrate` | Run pending database migrations |
 | `composer security:check` | Scan dependencies for known vulnerabilities |
 | `php console` | List all CLI commands (scaffolding, cache, routes) |
