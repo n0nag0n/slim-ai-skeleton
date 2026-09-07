@@ -27,13 +27,10 @@ class DbalQueryLoggerConnection extends AbstractConnectionMiddleware
         $start = microtime(true);
         try {
             $result = parent::query($sql);
-            $this->queries->addQuery(microtime(true) - $start, $sql, null, null, $this->getSource());
-            $this->queries->setLastQueryMethod('query');
-            $this->queries->setLastQueryRows($result->rowCount());
+            $this->queries->addQuery(microtime(true) - $start, $sql, null, null, DbalQueries::caller(), $result->rowCount());
             return $result;
         } catch (\Throwable $e) {
-            $this->queries->addQuery(microtime(true) - $start, $sql, null, null, $this->getSource());
-            $this->queries->setLastQueryMethod('query');
+            $this->queries->addQuery(microtime(true) - $start, $sql, null, null, DbalQueries::caller());
             throw $e;
         }
     }
@@ -43,27 +40,11 @@ class DbalQueryLoggerConnection extends AbstractConnectionMiddleware
         $start = microtime(true);
         try {
             $result = parent::exec($sql);
-            $this->queries->addQuery(microtime(true) - $start, $sql, null, null, $this->getSource());
-            $this->queries->setLastQueryMethod('exec');
-            $this->queries->setLastQueryRows((int) $result);
+            $this->queries->addQuery(microtime(true) - $start, $sql, null, null, DbalQueries::caller(), (int) $result);
             return $result;
         } catch (\Throwable $e) {
-            $this->queries->addQuery(microtime(true) - $start, $sql, null, null, $this->getSource());
-            $this->queries->setLastQueryMethod('exec');
+            $this->queries->addQuery(microtime(true) - $start, $sql, null, null, DbalQueries::caller());
             throw $e;
         }
-    }
-
-    private function getSource(): string
-    {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 10);
-        foreach ($trace as $frame) {
-            $file = $frame['file'] ?? '';
-            $line = $frame['line'] ?? 0;
-            if (!str_contains($file, 'vendor/') && !str_contains($file, 'src/Debug/')) {
-                return $file . ':' . $line;
-            }
-        }
-        return 'unknown';
     }
 }

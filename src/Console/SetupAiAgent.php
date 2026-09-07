@@ -26,16 +26,18 @@ class SetupAiAgent implements CommandInterface
         'none' => ['label' => 'AGENTS.md only (no tool-specific file)', 'path' => null],
     ];
 
-    /** @var list<string> */
-    private const ALL_TOOL_PATHS = [
-        'CLAUDE.md',
-        '.github/copilot-instructions.md',
-        'GEMINI.md',
-        '.cursorrules',
-        '.windsurfrules',
-        '.continue/rules/instructions.md',
-        'cline_docs/CONTEXT.md',
-    ];
+    /** @return list<string> */
+    public static function instructionFiles(): array
+    {
+        $paths = [];
+        foreach (self::AGENTS as $agent) {
+            if ($agent['path'] !== null) {
+                $paths[] = $agent['path'];
+            }
+        }
+
+        return $paths;
+    }
 
     /** @var callable(): (string|false) */
     private $readLine;
@@ -172,7 +174,7 @@ class SetupAiAgent implements CommandInterface
             echo "Ensured: {$keepPath}\n";
         }
 
-        foreach (self::ALL_TOOL_PATHS as $path) {
+        foreach (self::instructionFiles() as $path) {
             if ($path === $keepPath) {
                 continue;
             }

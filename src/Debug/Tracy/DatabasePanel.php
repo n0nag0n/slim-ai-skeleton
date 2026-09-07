@@ -45,7 +45,7 @@ class DatabasePanel extends ExtensionBase implements \Tracy\IBarPanel
         }
 
         $rows = '';
-        foreach ($queries as $i => $q) {
+        foreach ($queries as $q) {
             $sql = $this->handleLongStrings($q['sql']);
             $params = !empty($q['params']) ? $this->handleLongStrings($q['params']) : '—';
             $time = round($q['time'], 4);

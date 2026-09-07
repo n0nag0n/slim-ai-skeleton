@@ -26,20 +26,12 @@ class SessionPanel extends ExtensionBase implements \Tracy\IBarPanel
         }
 
         ksort($data, SORT_NATURAL);
-
-        $rows = '';
-        foreach ($data as $key => $value) {
-            $keyHtml = htmlspecialchars((string) $key);
-            $valHtml = $this->handleLongStrings($value);
-            $rows .= "<tr><td>{$keyHtml}</td><td>{$valHtml}</td></tr>";
-        }
+        $table = $this->renderTable($data);
 
         return <<<HTML
 <h1>Session Data</h1>
 <div class="tracy-inner" style="max-height:400px">
-    <table>
-        <tbody>{$rows}</tbody>
-    </table>
+    {$table}
 </div>
 HTML;
     }

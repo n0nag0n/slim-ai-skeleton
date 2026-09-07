@@ -14,39 +14,33 @@ final class DbalQueries
         ?array $params = null,
         ?array $types = null,
         ?string $source = null,
+        int $rows = 0,
     ): void {
         $this->queries[] = [
             'sql' => $sql,
             'params' => $params ?? [],
             'types' => $types ?? [],
             'time' => round($duration, 4),
-            'rows' => 0,
+            'rows' => $rows,
             'source' => $source ?? 'unknown',
-            'method' => 'unknown',
         ];
     }
 
-    public function setLastQueryRows(int $rows): void
+    public static function caller(): string
     {
-        if (!empty($this->queries)) {
-            $this->queries[array_key_last($this->queries)]['rows'] = $rows;
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 12);
+        foreach ($trace as $frame) {
+            $file = $frame['file'] ?? '';
+            $line = $frame['line'] ?? 0;
+            if (!str_contains($file, 'vendor/') && !str_contains($file, 'src/Debug/')) {
+                return $file . ':' . $line;
+            }
         }
-    }
-
-    public function setLastQueryMethod(string $method): void
-    {
-        if (!empty($this->queries)) {
-            $this->queries[array_key_last($this->queries)]['method'] = $method;
-        }
+        return 'unknown';
     }
 
     public function getAll(): array
     {
         return $this->queries;
-    }
-
-    public function count(): int
-    {
-        return count($this->queries);
     }
 }

@@ -63,23 +63,4 @@ class RequestPanel extends ExtensionBase implements \Tracy\IBarPanel
 </div>
 HTML;
     }
-
-    private function renderTableSection(string $title, array $data): string
-    {
-        if (empty($data)) {
-            return '';
-        }
-        $rows = '';
-        foreach ($data as $key => $value) {
-            $keyHtml = htmlspecialchars((string) $key);
-            $valHtml = $this->handleLongStrings($value);
-            $rows .= "<tr><td>{$keyHtml}</td><td>{$valHtml}</td></tr>";
-        }
-        return <<<HTML
-<table>
-    <thead><tr><th colspan="2" style="background:#EEE">{$title}</th></tr></thead>
-    <tbody>{$rows}</tbody>
-</table>
-HTML;
-    }
 }

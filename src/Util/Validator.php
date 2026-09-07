@@ -28,10 +28,15 @@ class Validator
         return $this->labels[$field] ?? str_replace('_', ' ', ucfirst($field));
     }
 
+    private function value(string $field): mixed
+    {
+        return $this->data[$field] ?? '';
+    }
+
     public function required(string ...$fields): static
     {
         foreach ($fields as $field) {
-            $value = $this->data[$field] ?? '';
+            $value = $this->value($field);
             if ($value === '' || (is_array($value) && empty($value))) {
                 $this->errors[$field][] = $this->label($field) . ' is required.';
             }
@@ -41,7 +46,7 @@ class Validator
 
     public function email(string $field): static
     {
-        $value = $this->data[$field] ?? '';
+        $value = $this->value($field);
         if ($value !== '' && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
             $this->errors[$field][] = $this->label($field) . ' must be a valid email address.';
         }
@@ -50,7 +55,7 @@ class Validator
 
     public function minLength(string $field, int $min): static
     {
-        $value = $this->data[$field] ?? '';
+        $value = $this->value($field);
         if ($value !== '' && mb_strlen((string) $value) < $min) {
             $this->errors[$field][] = $this->label($field) . ' must be at least ' . $min . ' characters.';
         }
@@ -59,7 +64,7 @@ class Validator
 
     public function maxLength(string $field, int $max): static
     {
-        $value = $this->data[$field] ?? '';
+        $value = $this->value($field);
         if ($value !== '' && mb_strlen((string) $value) > $max) {
             $this->errors[$field][] = $this->label($field) . ' must not exceed ' . $max . ' characters.';
         }
@@ -68,8 +73,8 @@ class Validator
 
     public function matches(string $field, string $otherField): static
     {
-        $value = $this->data[$field] ?? '';
-        $other = $this->data[$otherField] ?? '';
+        $value = $this->value($field);
+        $other = $this->value($otherField);
         if ($value !== '' && $value !== $other) {
             $this->errors[$field][] = $this->label($field) . ' must match ' . $this->label($otherField) . '.';
         }
@@ -78,7 +83,7 @@ class Validator
 
     public function numeric(string $field): static
     {
-        $value = $this->data[$field] ?? '';
+        $value = $this->value($field);
         if ($value !== '' && !is_numeric($value)) {
             $this->errors[$field][] = $this->label($field) . ' must be a number.';
         }
@@ -88,7 +93,7 @@ class Validator
     /** @param array<int, string> $allowed */
     public function inArray(string $field, array $allowed): static
     {
-        $value = $this->data[$field] ?? '';
+        $value = $this->value($field);
         if ($value !== '' && !in_array($value, $allowed, true)) {
             $allowedStr = implode(', ', $allowed);
             $this->errors[$field][] = $this->label($field) . ' must be one of: ' . $allowedStr . '.';
@@ -98,7 +103,7 @@ class Validator
 
     public function url(string $field): static
     {
-        $value = $this->data[$field] ?? '';
+        $value = $this->value($field);
         if ($value !== '' && !filter_var($value, FILTER_VALIDATE_URL)) {
             $this->errors[$field][] = $this->label($field) . ' must be a valid URL.';
         }
