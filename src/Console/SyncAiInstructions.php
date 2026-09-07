@@ -8,16 +8,6 @@ use DI\Container;
 
 class SyncAiInstructions implements CommandInterface
 {
-    /** @var array<int, string> */
-    private array $targets = [
-        'CLAUDE.md',
-        '.github/copilot-instructions.md',
-        'GEMINI.md',
-        '.cursorrules',
-        '.windsurfrules',
-        'cline_docs/CONTEXT.md',
-    ];
-
     public function __construct(private ?string $projectRoot = null)
     {
     }
@@ -31,7 +21,7 @@ class SyncAiInstructions implements CommandInterface
         $source = $root . '/AGENTS.md';
         $count = 0;
 
-        foreach ($this->targets as $target) {
+        foreach (SetupAiAgent::instructionFiles() as $target) {
             $dest = $root . '/' . $target;
             $dir = dirname($dest);
             if (!is_dir($dir)) {

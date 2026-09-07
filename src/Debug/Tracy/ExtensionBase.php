@@ -6,13 +6,6 @@ namespace App\Debug\Tracy;
 
 abstract class ExtensionBase
 {
-    protected int $valueWidth = 300;
-
-    public function setValueWidth(int $valueWidth): void
-    {
-        $this->valueWidth = $valueWidth;
-    }
-
     protected function handleLongStrings(mixed $value): string
     {
         if (is_object($value)) {
@@ -33,7 +26,7 @@ abstract class ExtensionBase
 
         if (strlen($value) > 60) {
             $id = uniqid('tracy-panel-');
-            $style = 'max-width: ' . $this->valueWidth . 'px; overflow: auto;';
+            $style = 'max-width: 300px; overflow: auto;';
             $style .= ' min-height: 40px; background-color: #EEE; padding: 5px;';
             $value = $this->ellipsis($value, 60)
                 . ' <a href="#' . $id . '" class="tracy-toggle tracy-collapsed">more</a>'
@@ -61,12 +54,34 @@ abstract class ExtensionBase
 
     protected function renderTable(array $data): string
     {
+        return '<table><tbody>' . $this->tableRows($data) . '</tbody></table>';
+    }
+
+    protected function renderTableSection(string $title, array $data): string
+    {
+        if ($data === []) {
+            return '';
+        }
+
+        $titleHtml = htmlspecialchars($title);
+        $rows = $this->tableRows($data);
+
+        return <<<HTML
+<table>
+    <thead><tr><th colspan="2" style="background:#EEE">{$titleHtml}</th></tr></thead>
+    <tbody>{$rows}</tbody>
+</table>
+HTML;
+    }
+
+    private function tableRows(array $data): string
+    {
         $rows = '';
         foreach ($data as $key => $value) {
             $keyHtml = htmlspecialchars((string) $key);
             $valHtml = $this->handleLongStrings($value);
             $rows .= "<tr><td>{$keyHtml}</td><td>{$valHtml}</td></tr>";
         }
-        return '<table><tbody>' . $rows . '</tbody></table>';
+        return $rows;
     }
 }
