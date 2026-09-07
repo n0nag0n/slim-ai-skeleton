@@ -41,7 +41,6 @@ class SyncAiInstructionsTest extends TestCase
             $this->tempDir . '/GEMINI.md',
             $this->tempDir . '/.cursorrules',
             $this->tempDir . '/.windsurfrules',
-            $this->tempDir . '/.continue/rules/instructions.md',
             $this->tempDir . '/cline_docs/CONTEXT.md',
         ];
 
@@ -51,7 +50,7 @@ class SyncAiInstructionsTest extends TestCase
         }
 
         $this->assertStringContainsString('Synced: CLAUDE.md', $output);
-        $this->assertStringContainsString('7 AI configs synced', $output);
+        $this->assertStringContainsString('6 AI configs synced', $output);
     }
 
     private function removeDir(string $path): void

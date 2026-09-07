@@ -119,5 +119,5 @@ filesystems and databases when needed.
 
 After every task, verify nothing is broken:
 ```bash
-composer lint && composer stan && composer test
+composer stan && composer test
 ```

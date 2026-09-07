@@ -21,7 +21,6 @@ class SetupAiAgent implements CommandInterface
         'gemini' => ['label' => 'Gemini', 'path' => 'GEMINI.md'],
         'cursor' => ['label' => 'Cursor', 'path' => '.cursorrules'],
         'windsurf' => ['label' => 'Windsurf', 'path' => '.windsurfrules'],
-        'continue' => ['label' => 'Continue', 'path' => '.continue/rules/instructions.md'],
         'cline' => ['label' => 'Cline', 'path' => 'cline_docs/CONTEXT.md'],
         'none' => ['label' => 'AGENTS.md only (no tool-specific file)', 'path' => null],
     ];
@@ -186,8 +185,6 @@ class SetupAiAgent implements CommandInterface
         }
 
         $this->removeEmptyDirs($root, [
-            '.continue/rules',
-            '.continue',
             'cline_docs',
         ]);
     }

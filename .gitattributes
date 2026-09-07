@@ -8,7 +8,7 @@
 # Exclude only runtime/generated artifacts from git archive /
 # composer create-project tarballs. Framework files (.gitignore,
 # tests/, .notes/, .agents/) and AI instruction configs (.github/
-# copilot-instructions.md, .cursor/, .continue/, cline_docs/, etc.)
+# copilot-instructions.md, .cursor/, cline_docs/, etc.)
 # ship with the skeleton — that is the product.
 /var/ export-ignore
 .phpunit.result.cache export-ignore
