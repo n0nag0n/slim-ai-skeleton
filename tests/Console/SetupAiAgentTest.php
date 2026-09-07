@@ -20,7 +20,6 @@ class SetupAiAgentTest extends TestCase
         mkdir($this->tempDir . '/tests/Console', 0755, true);
         mkdir($this->tempDir . '/config', 0755, true);
         mkdir($this->tempDir . '/.github', 0755, true);
-        mkdir($this->tempDir . '/.continue/rules', 0755, true);
         mkdir($this->tempDir . '/cline_docs', 0755, true);
 
         $agentsBody = <<<'MD'
@@ -37,7 +36,7 @@ php console migrate
 ### Syncing AI Configs
 
 `AGENTS.md` is the source of truth. Copies are mirrored to Claude, Copilot,
-Gemini, Cursor, Windsurf, Continue, and Cline config files. After editing
+Gemini, Cursor, Windsurf, and Cline config files. After editing
 `AGENTS.md` (root or nested), run:
 
 ```bash
@@ -55,7 +54,6 @@ MD;
         file_put_contents($this->tempDir . '/.cursorrules', $agentsBody);
         file_put_contents($this->tempDir . '/.windsurfrules', $agentsBody);
         file_put_contents($this->tempDir . '/.github/copilot-instructions.md', $agentsBody);
-        file_put_contents($this->tempDir . '/.continue/rules/instructions.md', $agentsBody);
         file_put_contents($this->tempDir . '/cline_docs/CONTEXT.md', $agentsBody);
 
         file_put_contents(
@@ -144,10 +142,8 @@ MD);
         $this->assertFileDoesNotExist($this->tempDir . '/.cursorrules');
         $this->assertFileDoesNotExist($this->tempDir . '/.windsurfrules');
         $this->assertFileDoesNotExist($this->tempDir . '/.github/copilot-instructions.md');
-        $this->assertFileDoesNotExist($this->tempDir . '/.continue/rules/instructions.md');
         $this->assertFileDoesNotExist($this->tempDir . '/cline_docs/CONTEXT.md');
         $this->assertDirectoryDoesNotExist($this->tempDir . '/cline_docs');
-        $this->assertDirectoryDoesNotExist($this->tempDir . '/.continue');
         $this->assertStringContainsString('Claude Code', $output);
     }
 

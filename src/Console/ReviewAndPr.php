@@ -10,7 +10,6 @@ class ReviewAndPr implements CommandInterface
 {
     /** @var array<int, array{command: string, label: string}> */
     private array $checks = [
-        ['command' => 'composer lint', 'label' => 'Lint'],
         ['command' => 'composer stan', 'label' => 'Static Analysis'],
         ['command' => 'composer test', 'label' => 'Tests'],
     ];

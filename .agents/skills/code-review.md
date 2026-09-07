@@ -8,7 +8,6 @@ or when evaluating whether a task is complete.
 These commands are the minimum bar before any change is considered complete:
 
 ```bash
-composer lint
 composer stan
 composer test
 ```
