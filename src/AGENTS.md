@@ -44,7 +44,7 @@ class ExampleController
 Never use `$_ENV`, `$_GET`, `$_POST`, `$_SERVER`, `$_SESSION`, or
 `$_COOKIE` in application code. Use Slim's Request object for HTTP input.
 
-`$_ENV` is read only in `config/`, `src/Console/`, and `src/Util/MigrationFileResolver.php`.
+`$_ENV` is read only in `config/`, `src/Console/`, `src/Util/EnvFile.php`, and `src/Util/MigrationFileResolver.php`.
 
 ## Inline SQL
 

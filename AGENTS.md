@@ -42,7 +42,7 @@ There is no sample domain. A class or URL named in a skill does not exist until 
 
 Route arguments are named method parameters (`string $id`). `array $args` is always empty with php-di/slim-bridge.
 
-`$_ENV` is read only in `config/`, `src/Console/`, and `src/Util/MigrationFileResolver.php`. HTTP input comes from the Request.
+`$_ENV` is read only in `config/`, `src/Console/`, `src/Util/EnvFile.php`, and `src/Util/MigrationFileResolver.php`. HTTP input comes from the Request.
 
 ## Do not invent
 

@@ -36,6 +36,9 @@ parameters:
         -
             superglobal: '$_SERVER'
             message: 'use $request->getServerParams() instead'
+            allowIn:
+                - '*/src/Util/EnvFile.php'
+                - '*/src/Util/Session.php'
         -
             superglobal: '$GLOBALS'
             message: 'never use $GLOBALS'
@@ -45,11 +48,13 @@ parameters:
             allowIn:
                 - '*/config/*'
                 - '*/src/Console/*'
+                - '*/src/Util/EnvFile.php'
                 - '*/src/Util/MigrationFileResolver.php'
         -
             superglobal: '$_SERVER'
             message: 'use $request->getServerParams() instead'
             allowIn:
+                - '*/src/Util/EnvFile.php'
                 - '*/src/Util/Session.php'
         -
             superglobal: '$_SESSION'

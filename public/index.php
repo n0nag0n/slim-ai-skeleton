@@ -6,8 +6,7 @@ $rootPath = dirname(__DIR__);
 
 require_once $rootPath . '/vendor/autoload.php';
 
-$dotenv = Dotenv\Dotenv::createImmutable($rootPath);
-$dotenv->safeLoad();
+\App\Util\EnvFile::load($rootPath);
 
 $debug = filter_var($_ENV['DEBUG_MODE'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
