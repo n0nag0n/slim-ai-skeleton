@@ -46,8 +46,9 @@ that AIs recognize:
 - **No magic** — every import is explicit, no auto-discovery, no hidden configuration
 - **One file per concept** — controllers handle HTTP, models handle data, templates handle HTML
 
-If you're using an AI coding assistant, just open this project in your editor and the AI will
-already understand the patterns. The file `AGENTS.md` contains detailed instructions for AI tools.
+If you're using an AI coding assistant, open this project and it will read `AGENTS.md`.
+That file points at the task skills in `.agents/skills/`. On `composer create-project`,
+the installer asks which AI tool you use and removes the instruction files for the others.
 
 ## Requirements
 
@@ -73,6 +74,7 @@ Open `http://localhost:8080` in your browser. You should see the homepage.
 | Command | Description |
 |---------|-------------|
 | `composer start` | Start the development server on port 8080 |
+| `composer check` | Lint, PHPStan, and tests |
 | `composer test` | Run all tests |
 | `composer lint` | Check code style with PHP_CodeSniffer |
 | `composer stan` | Run PHPStan static analysis |
@@ -80,48 +82,18 @@ Open `http://localhost:8080` in your browser. You should see the homepage.
 | `composer migrate` | Run pending database migrations |
 | `composer security:check` | Scan dependencies for known vulnerabilities |
 | `php console` | List all CLI commands (scaffolding, cache, routes) |
-| `composer sync-ai-instructions` | Sync AGENTS.md to AI tool config files |
+| `composer sync-ai-instructions` | Copy AGENTS.md to the full copies the saved provider keeps |
+| `php console ai:provider` | Save one AI tool in `.agents/provider` and remove the other instruction files |
 
 ## Your first new page
 
-Here's how to add a new page at `/hello`:
+```bash
+php console make:controller Hello
+```
 
-1. **Add a route** in `config/routes.php`:
-   ```php
-   $app->get('/hello', [App\Controller\HelloController::class, 'index']);
-   ```
+That registers `/hello` and `/hello/{id}`, and writes the controller, `templates/hello.twig`, `templates/hello-show.twig`, and a test. Edit the template, then visit `http://localhost:8080/hello`.
 
-2. **Create a controller** at `src/Controller/HelloController.php`:
-   ```php
-   <?php
-
-   namespace App\Controller;
-
-   use Psr\Http\Message\ResponseInterface;
-   use Psr\Http\Message\ServerRequestInterface;
-   use Slim\Views\Twig;
-
-   class HelloController
-   {
-       public function __construct(private Twig $twig) {}
-
-       public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
-       {
-           return $this->twig->render($response, 'hello.twig');
-       }
-   }
-   ```
-
-3. **Create a template** at `templates/hello.twig`:
-   ```twig
-   {% extends 'layout.twig' %}
-
-   {% block content %}
-       <h1>Hello, world!</h1>
-   {% endblock %}
-   ```
-
-4. **Restart the server** and visit `http://localhost:8080/hello`.
+An AI assistant should follow `.agents/skills/add-html-page/SKILL.md` for this, not invent a second layout.
 
 ## Project Structure
 
@@ -137,6 +109,7 @@ Here's how to add a new page at `/hello`:
 ├── src/
 │   ├── Console/              # CLI commands (scaffolding, cache, routes)
 │   ├── Controller/           # Request handlers — one file per page or feature
+│   ├── Security/             # CSRF, CORS, and response headers
 │   ├── Debug/                # Tracy debug panels and query logging
 │   ├── Model/                # Database query code
 │   ├── Renderer/             # Response helpers (e.g., JSON)
@@ -215,7 +188,7 @@ to run it in the background: `php -S localhost:8080 -t public > /dev/null 2>&1 &
 ## What's next?
 
 - Try adding your own page using the walkthrough above
-- Run `composer test` to confirm everything still works after your changes
+- Run `composer check` to confirm everything still works after your changes
 - Ask your AI assistant: "Add a page that shows the current time"
 - When you're ready to deploy, set `DEBUG_MODE=false` and `APP_ENV=production` in `.env`
 

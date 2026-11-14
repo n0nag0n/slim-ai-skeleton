@@ -8,6 +8,10 @@ use DI\Container;
 
 class MakeSeeder implements CommandInterface
 {
+    public function __construct(private ?string $projectRoot = null)
+    {
+    }
+
     /**
      * @param array<int, string> $args
      */
@@ -20,7 +24,12 @@ class MakeSeeder implements CommandInterface
             return 1;
         }
 
-        $root = dirname(__DIR__, 2);
+        if (!preg_match('/^[A-Z][A-Za-z0-9]*$/', $name)) {
+            echo "Name must be PascalCase, such as Widget.\n";
+            return 1;
+        }
+
+        $root = $this->projectRoot ?? dirname(__DIR__, 2);
         $seedsDir = $root . '/database/seeds';
 
         if (!is_dir($seedsDir)) {

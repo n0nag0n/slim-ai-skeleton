@@ -10,6 +10,7 @@ use App\Console\MakeSeeder;
 use App\Console\CacheClear;
 use App\Console\RouteList;
 use App\Console\SyncAiInstructions;
+use App\Console\SelectAiProvider;
 use App\Console\Help;
 use App\Console\Migrate;
 use App\Console\DbSeed;
@@ -24,7 +25,11 @@ return [
     'route:list' => ['class' => RouteList::class, 'description' => 'List all registered routes'],
     'sync-ai-instructions' => [
         'class' => SyncAiInstructions::class,
-        'description' => 'Sync AGENTS.md to all AI config files',
+        'description' => 'Copy AGENTS.md to Gemini, Windsurf, and Cline',
+    ],
+    'ai:provider' => [
+        'class' => SelectAiProvider::class,
+        'description' => 'Keep one AI provider\'s instruction files and remove the rest',
     ],
     'migrate' => ['class' => Migrate::class, 'description' => 'Run pending database migrations'],
     'db:seed' => ['class' => DbSeed::class, 'description' => 'Run all database seeders'],

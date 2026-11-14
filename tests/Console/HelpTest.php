@@ -26,6 +26,7 @@ class HelpTest extends TestCase
         $this->assertStringContainsString('cache:clear', $output);
         $this->assertStringContainsString('route:list', $output);
         $this->assertStringContainsString('sync-ai-instructions', $output);
+        $this->assertStringContainsString('ai:provider', $output);
         $this->assertStringContainsString('migrate', $output);
         $this->assertStringContainsString('help', $output);
     }
