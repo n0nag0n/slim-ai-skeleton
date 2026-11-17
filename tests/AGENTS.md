@@ -32,13 +32,18 @@ class YourControllerTest extends TestCase
 }
 ```
 
-Controller tests don't need the database -- mock models or test endpoints
-that don't touch the DB.
+Controller tests don't need the database. Hit an endpoint that does not
+touch it, or build the model with the test connection.
+
+`createApp()` does not register `CsrfMiddleware`, Tracy, or the production
+error handler. A passing POST test does not prove the route accepts a CSRF
+token.
 
 ## Testing Models
 
-Model tests create their tables inline in `setUp()` since migrations are
-`.sql.example` files that aren't auto-run. This keeps each test file
+Model tests create their tables inline in `setUp()`. The starter migration
+is a `.sql.example` file. Real `migrations/*.sql` files are run by
+`runMigrations()`. Creating the table in the test keeps that file
 self-contained.
 
 ```php
@@ -119,5 +124,5 @@ filesystems and databases when needed.
 
 After every task, verify nothing is broken:
 ```bash
-composer stan && composer test
+composer check
 ```

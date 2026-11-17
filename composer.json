@@ -5,19 +5,30 @@
     "type": "project",
     "require": {
         "php": "^8.2",
+        "ext-ctype": "*",
+        "ext-iconv": "*",
+        "ext-mbstring": "*",
         "slim/slim": "^4.15",
         "slim/psr7": "^1.8",
         "php-di/slim-bridge": "^3.4",
-        "vlucas/phpdotenv": "^5.6",
         "doctrine/dbal": "^4.2",
         "tracy/tracy": "^2.10",
         "slim/twig-view": "^3.4",
         "twig/twig": "^3.26"
     },
+    "replace": {
+        "symfony/deprecation-contracts": "*",
+        "symfony/polyfill-ctype": "*",
+        "symfony/polyfill-mbstring": "*",
+        "symfony/polyfill-php80": "*",
+        "symfony/polyfill-php81": "*"
+    },
     "require-dev": {
-        "phpunit/phpunit": "^11.0",
+        "phpunit/phpunit": "^12.0",
         "phpstan/phpstan": "^2.1",
         "phpstan/phpstan-doctrine": "^2.0",
+        "squizlabs/php_codesniffer": "^4.0",
+        "slevomat/coding-standard": "*",
         "spaze/phpstan-disallowed-calls": "^4.12",
         "enlightn/security-checker": "^2.0"
     },
@@ -25,7 +36,10 @@
         "psr-4": {
             "App\\": "src/",
             "App\\Database\\Seeds\\": "database/seeds/"
-        }
+        },
+        "files": [
+            "src/trigger_deprecation.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
@@ -38,19 +52,28 @@
             "mkdir -p var/log"
         ],
         "post-create-project-cmd": [
-            "php console setup:ai-agent"
+            "php console ai:provider"
         ],
-        "start": [
-    			"Composer\\Config::disableProcessTimeout",
-    			"php -S localhost:8080 -t public"
-    		],
+        "start": "COMPOSER_PROCESS_TIMEOUT=0 php -S localhost:8080 -t public",
         "test": "phpunit",
         "test:unit": "phpunit",
         "test:integration": "docker compose -f docker-compose.test.yml up -d && sleep 10 && phpunit -c phpunit.integration.xml; docker compose -f docker-compose.test.yml down",
         "test:all": "composer test && composer test:integration",
         "migrate": "php console migrate",
+        "check": [
+            "@lint",
+            "@stan",
+            "@test"
+        ],
+        "lint": "phpcs --standard=phpcs.xml.dist",
         "stan": "php -d memory_limit=256M vendor/bin/phpstan analyse --configuration=phpstan.neon.dist",
+        "cs-fix": "phpcbf --standard=phpcs.xml.dist",
         "sync-ai-instructions": "php console sync-ai-instructions",
         "security:check": "vendor/bin/security-checker security:check composer.lock"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     }
 }

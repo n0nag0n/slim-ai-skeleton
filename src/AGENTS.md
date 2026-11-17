@@ -43,12 +43,12 @@ class ExampleController
 Never use `$_ENV`, `$_GET`, `$_POST`, `$_SERVER`, `$_SESSION`, or
 `$_COOKIE` in application code. Use Slim's Request object for HTTP input.
 
-`$_ENV` is reserved for `config/dependencies.php` boot-time wiring only.
+`$_ENV` is read only in `config/`, `src/Console/`, `src/Util/EnvFile.php`, and `src/Util/MigrationFileResolver.php`.
 
 ## Inline SQL
 
-When writing SQL inside PHP files (models, controllers), always use nowdoc
-syntax (`<<<'SQL'`) to avoid PHP string quoting conflicts:
+One-line SQL may be a single-quoted string, as in `ExampleModel`. SQL that
+spans lines or contains quotes uses a nowdoc so PHP does not interpolate it:
 
 ```php
 <<<'SQL'
@@ -57,6 +57,3 @@ SELECT COUNT(*) as total,
 FROM tasks WHERE project_id = ?
 SQL
 ```
-
-Nowdoc prevents variable interpolation and eliminates quote escaping errors.
-This is the only SQL string convention permitted in `src/`.

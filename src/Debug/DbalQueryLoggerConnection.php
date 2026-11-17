@@ -27,7 +27,14 @@ class DbalQueryLoggerConnection extends AbstractConnectionMiddleware
         $start = microtime(true);
         try {
             $result = parent::query($sql);
-            $this->queries->addQuery(microtime(true) - $start, $sql, null, null, DbalQueries::caller(), $result->rowCount());
+            $this->queries->addQuery(
+                microtime(true) - $start,
+                $sql,
+                null,
+                null,
+                DbalQueries::caller(),
+                $result->rowCount(),
+            );
             return $result;
         } catch (\Throwable $e) {
             $this->queries->addQuery(microtime(true) - $start, $sql, null, null, DbalQueries::caller());

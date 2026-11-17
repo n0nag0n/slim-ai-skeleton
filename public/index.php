@@ -6,8 +6,7 @@ $rootPath = dirname(__DIR__);
 
 require_once $rootPath . '/vendor/autoload.php';
 
-$dotenv = Dotenv\Dotenv::createImmutable($rootPath);
-$dotenv->safeLoad();
+\App\Util\EnvFile::load($rootPath);
 
 // Normalize X-Forwarded-* headers from trusted reverse proxies (nginx etc.)
 // so that Session secure cookies, request scheme, and client IP are correct.

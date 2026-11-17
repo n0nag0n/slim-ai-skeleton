@@ -42,6 +42,19 @@ class MakeMigrationTest extends TestCase
         $this->assertStringContainsString('Migration: test_migration_description', $contents);
     }
 
+    public function testRejectsPathCharacters(): void
+    {
+        $container = (new ContainerBuilder())->build();
+        $command = new MakeMigration();
+
+        ob_start();
+        $exitCode = $command->execute(['../create_widgets'], $container);
+        $output = ob_get_clean();
+
+        $this->assertSame(1, $exitCode);
+        $this->assertStringContainsString('snake_case', $output);
+    }
+
     public function testReturnsErrorWithoutDescription(): void
     {
         $container = (new ContainerBuilder())->build();

@@ -21,6 +21,11 @@ class MakeMigration implements CommandInterface
             return 1;
         }
 
+        if (!preg_match('/^[a-z0-9_]+$/', $description)) {
+            echo "Description must be snake_case, such as create_widgets.\n";
+            return 1;
+        }
+
         $timestamp = date('Ymd_His');
         $filename = $timestamp . '_' . $description . '.sql';
         $path = dirname(__DIR__, 2) . '/migrations/' . $filename;

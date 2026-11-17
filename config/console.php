@@ -10,12 +10,11 @@ use App\Console\MakeSeeder;
 use App\Console\CacheClear;
 use App\Console\RouteList;
 use App\Console\SyncAiInstructions;
-use App\Console\SetupAiAgent;
+use App\Console\SelectAiProvider;
 use App\Console\Help;
 use App\Console\Migrate;
 use App\Console\DbSeed;
 use App\Console\ReviewAndPr;
-use App\Console\InstallAdminer;
 
 return [
     'make:controller' => ['class' => MakeController::class, 'description' => 'Scaffold a new controller + test'],
@@ -24,23 +23,19 @@ return [
     'make:seeder' => ['class' => MakeSeeder::class, 'description' => 'Scaffold a new database seeder'],
     'cache:clear' => ['class' => CacheClear::class, 'description' => 'Clear Twig and DI container cache'],
     'route:list' => ['class' => RouteList::class, 'description' => 'List all registered routes'],
-    'setup:ai-agent' => [
-        'class' => SetupAiAgent::class,
-        'description' => 'Pick AI agent; keep its instruction file and remove sync command',
-    ],
     'sync-ai-instructions' => [
         'class' => SyncAiInstructions::class,
-        'description' => 'Sync AGENTS.md to all AI config files',
+        'description' => 'Copy AGENTS.md to Gemini, Windsurf, and Cline',
+    ],
+    'ai:provider' => [
+        'class' => SelectAiProvider::class,
+        'description' => 'Keep one AI provider\'s instruction files and remove the rest',
     ],
     'migrate' => ['class' => Migrate::class, 'description' => 'Run pending database migrations'],
     'db:seed' => ['class' => DbSeed::class, 'description' => 'Run all database seeders'],
     'review:pr' => [
         'class' => ReviewAndPr::class,
         'description' => 'Run lint/stan/test, then create branch + commit + PR',
-    ],
-    'adminer:install' => [
-        'class' => InstallAdminer::class,
-        'description' => 'Download Adminer to public/adminer.php (mysql|sqlite)',
     ],
     'help' => ['class' => Help::class, 'description' => 'Display available commands'],
 ];

@@ -20,6 +20,11 @@ class MakeModel implements CommandInterface
             return 1;
         }
 
+        if (!preg_match('/^[A-Z][A-Za-z0-9]*$/', $name)) {
+            echo "Name must be PascalCase, such as Widget.\n";
+            return 1;
+        }
+
         $root = dirname(__DIR__, 2);
         $table = $this->toSnakePlural($name);
 
@@ -69,10 +74,6 @@ class {$name}
 PHP;
         file_put_contents($modelPath, $modelStub);
         echo "Created: src/Model/{$name}.php\n";
-
-        // Add DI definition
-        echo "Registered: config/dependencies.php\n";
-        echo "  (add: {$name}::class => DI\\autowire(),)\n";
 
         // Create test
         $testPath = $root . '/tests/Model/' . $name . 'Test.php';
@@ -150,10 +151,8 @@ PHP;
         file_put_contents($testPath, $testStub);
         echo "Created: tests/Model/{$name}Test.php\n";
 
-        echo "\nNext steps:\n";
-        echo "  1. Run: php console make:migration {$table} to create the database migration\n";
-        echo "  2. Add DI entry in config/dependencies.php:\n";
-        echo "     {$name}::class => DI\\autowire(),\n";
+        echo "\nNext: php console make:migration create_{$table}\n";
+        echo "PHP-DI autowires this class. No config/dependencies.php entry.\n";
 
         return 0;
     }

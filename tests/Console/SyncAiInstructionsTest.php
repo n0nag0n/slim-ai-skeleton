@@ -17,6 +17,7 @@ class SyncAiInstructionsTest extends TestCase
         $this->tempDir = sys_get_temp_dir() . '/slim_test_sync_' . uniqid();
         mkdir($this->tempDir, 0755, true);
         file_put_contents($this->tempDir . '/AGENTS.md', '# Test Instructions');
+        file_put_contents($this->tempDir . '/CLAUDE.md', '# Pointer');
     }
 
     protected function tearDown(): void
@@ -24,7 +25,7 @@ class SyncAiInstructionsTest extends TestCase
         $this->removeDir($this->tempDir);
     }
 
-    public function testSyncsToAllTargets(): void
+    public function testSyncsFullCopiesAndLeavesPointers(): void
     {
         $container = (new ContainerBuilder())->build();
         $command = new SyncAiInstructions($this->tempDir);
@@ -35,22 +36,59 @@ class SyncAiInstructionsTest extends TestCase
 
         $this->assertSame(0, $exitCode);
 
-        $expectedTargets = [
-            $this->tempDir . '/CLAUDE.md',
-            $this->tempDir . '/.github/copilot-instructions.md',
+        $fullCopies = [
             $this->tempDir . '/GEMINI.md',
-            $this->tempDir . '/.cursorrules',
             $this->tempDir . '/.windsurfrules',
             $this->tempDir . '/cline_docs/CONTEXT.md',
         ];
 
-        foreach ($expectedTargets as $target) {
+        foreach ($fullCopies as $target) {
             $this->assertFileExists($target);
             $this->assertStringEqualsFile($target, '# Test Instructions');
         }
 
-        $this->assertStringContainsString('Synced: CLAUDE.md', $output);
-        $this->assertStringContainsString('6 AI configs synced', $output);
+        $this->assertStringEqualsFile($this->tempDir . '/CLAUDE.md', '# Pointer');
+        $this->assertFileDoesNotExist($this->tempDir . '/.cursorrules');
+        $this->assertStringContainsString('Synced: GEMINI.md', $output);
+        $this->assertStringContainsString('3 AI configs synced', $output);
+    }
+
+    public function testSkipsCopiesTheSelectedProviderDoesNotKeep(): void
+    {
+        mkdir($this->tempDir . '/.agents', 0755, true);
+        file_put_contents($this->tempDir . '/.agents/provider', "claude\n");
+
+        $container = (new ContainerBuilder())->build();
+        $command = new SyncAiInstructions($this->tempDir);
+
+        ob_start();
+        $exitCode = $command->execute([], $container);
+        $output = ob_get_clean();
+
+        $this->assertSame(0, $exitCode);
+        $this->assertFileDoesNotExist($this->tempDir . '/GEMINI.md');
+        $this->assertFileDoesNotExist($this->tempDir . '/.windsurfrules');
+        $this->assertFileDoesNotExist($this->tempDir . '/cline_docs');
+        $this->assertStringContainsString('Skipped: GEMINI.md', $output);
+        $this->assertStringContainsString('0 AI configs synced', $output);
+    }
+
+    public function testSyncsOnlyTheSavedProviderCopy(): void
+    {
+        mkdir($this->tempDir . '/.agents', 0755, true);
+        file_put_contents($this->tempDir . '/.agents/provider', "gemini\n");
+
+        $container = (new ContainerBuilder())->build();
+        $command = new SyncAiInstructions($this->tempDir);
+
+        ob_start();
+        $exitCode = $command->execute([], $container);
+        ob_end_clean();
+
+        $this->assertSame(0, $exitCode);
+        $this->assertStringEqualsFile($this->tempDir . '/GEMINI.md', '# Test Instructions');
+        $this->assertFileDoesNotExist($this->tempDir . '/.windsurfrules');
+        $this->assertFileDoesNotExist($this->tempDir . '/cline_docs');
     }
 
     private function removeDir(string $path): void

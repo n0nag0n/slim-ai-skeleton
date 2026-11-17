@@ -28,7 +28,7 @@ ready to go. Everything is set up so you can start adding your own pages and fea
 - **Flash messages** — one-request survival messages for form submission feedback via `App\Util\Flash`
 - **Validation** — method-chaining input validation with `App\Util\Validator` (required, email, length, matches, etc.)
 - **Pagination** — offset/limit calculator with `App\Util\Pagination` for list endpoints
-- **CLI console** — `php console` with commands to scaffold controllers, models, migrations, install Adminer, and more
+- **CLI console** — `php console` with commands to scaffold controllers, models, migrations, and more
 - **Tracy** — a debug bar with panels for requests, responses, routes, sessions, and database queries
 - **PHPUnit** — testing framework to make sure your code works
 - **PHPStan** — static analysis to catch bugs before runtime
@@ -46,8 +46,9 @@ that AIs recognize:
 - **No magic** — every import is explicit, no auto-discovery, no hidden configuration
 - **One file per concept** — controllers handle HTTP, models handle data, templates handle HTML
 
-If you're using an AI coding assistant, just open this project in your editor and the AI will
-already understand the patterns. The file `AGENTS.md` contains detailed instructions for AI tools.
+If you're using an AI coding assistant, open this project and it will read `AGENTS.md`.
+That file points at the task skills in `.agents/skills/`. On `composer create-project`,
+the installer asks which AI tool you use and removes the instruction files for the others.
 
 ## Requirements
 
@@ -66,18 +67,6 @@ composer migrate
 composer start
 ```
 
-During `create-project` you will be asked which AI coding agent you use (Claude Code,
-Cursor, Copilot, etc.). Only that agent's instruction file is kept (plus `AGENTS.md`);
-unused agent files and the multi-tool `sync-ai-instructions` command are removed.
-
-Non-interactive installs keep `AGENTS.md` only. To pick an agent without a prompt:
-
-```bash
-AI_AGENT=claude composer create-project n0nag0n/slim-ai-skeleton my-project
-# or after create-project:
-php console setup:ai-agent claude
-```
-
 Open `http://localhost:8080` in your browser. You should see the homepage.
 
 ## Commands
@@ -85,56 +74,26 @@ Open `http://localhost:8080` in your browser. You should see the homepage.
 | Command | Description |
 |---------|-------------|
 | `composer start` | Start the development server on port 8080 |
+| `composer check` | Lint, PHPStan, and tests |
 | `composer test` | Run all tests |
+| `composer lint` | Check code style with PHP_CodeSniffer |
 | `composer stan` | Run PHPStan static analysis |
+| `composer cs-fix` | Auto-fix code style issues |
 | `composer migrate` | Run pending database migrations |
 | `composer security:check` | Scan dependencies for known vulnerabilities |
 | `php console` | List all CLI commands (scaffolding, cache, routes) |
-| `php console adminer:install mysql` | Download Adminer for MySQL/MariaDB to `public/adminer.php` |
-| `php console adminer:install sqlite` | Download modified SQLite Adminer (no credentials) to `public/adminer.php` |
-| `php console setup:ai-agent [agent]` | Pick AI agent; keep its instruction file (runs on create-project) |
-| `composer sync-ai-instructions` | Sync AGENTS.md to all AI tool configs (skeleton maintainers) |
+| `composer sync-ai-instructions` | Copy AGENTS.md to the full copies the saved provider keeps |
+| `php console ai:provider` | Save one AI tool in `.agents/provider` and remove the other instruction files |
 
 ## Your first new page
 
-Here's how to add a new page at `/hello`:
+```bash
+php console make:controller Hello
+```
 
-1. **Add a route** in `config/routes.php`:
-   ```php
-   $app->get('/hello', [App\Controller\HelloController::class, 'index']);
-   ```
+That registers `/hello` and `/hello/{id}`, and writes the controller, `templates/hello.twig`, `templates/hello-show.twig`, and a test. Edit the template, then visit `http://localhost:8080/hello`.
 
-2. **Create a controller** at `src/Controller/HelloController.php`:
-   ```php
-   <?php
-
-   namespace App\Controller;
-
-   use Psr\Http\Message\ResponseInterface;
-   use Psr\Http\Message\ServerRequestInterface;
-   use Slim\Views\Twig;
-
-   class HelloController
-   {
-       public function __construct(private Twig $twig) {}
-
-       public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
-       {
-           return $this->twig->render($response, 'hello.twig');
-       }
-   }
-   ```
-
-3. **Create a template** at `templates/hello.twig`:
-   ```twig
-   {% extends 'layout.twig' %}
-
-   {% block content %}
-       <h1>Hello, world!</h1>
-   {% endblock %}
-   ```
-
-4. **Restart the server** and visit `http://localhost:8080/hello`.
+An AI assistant should follow `.agents/skills/add-html-page/SKILL.md` for this, not invent a second layout.
 
 ## Project Structure
 
@@ -150,6 +109,7 @@ Here's how to add a new page at `/hello`:
 ├── src/
 │   ├── Console/              # CLI commands (scaffolding, cache, routes)
 │   ├── Controller/           # Request handlers — one file per page or feature
+│   ├── Security/             # CSRF, CORS, and response headers
 │   ├── Debug/                # Tracy debug panels and query logging
 │   ├── Model/                # Database query code
 │   ├── Renderer/             # Response helpers (e.g., JSON)
@@ -171,7 +131,6 @@ Here's how to add a new page at `/hello`:
 |----------|---------|-------------|
 | `APP_ENV` | `dev` | Set to `production` when deploying |
 | `DEBUG_MODE` | `true` | Shows the Tracy debug bar. Turn off in production. |
-| `TRUSTED_PROXIES` | (empty) | Comma list of reverse proxy IPs (or `*`) when PHP is behind nginx/Caddy/etc. Fixes scheme, secure cookies, and client IP. |
 | `DB_DRIVER` | `pdo_sqlite` | Database driver (`pdo_mysql`, `pdo_pgsql`, etc.) |
 | `DB_PATH` | `var/database.sqlite` | Where the SQLite database file lives |
 | `CSRF_EXCLUDED_PATHS` | — | Comma-separated URL path prefixes to skip CSRF checks (e.g. `/api,/health`) |
@@ -229,7 +188,7 @@ to run it in the background: `php -S localhost:8080 -t public > /dev/null 2>&1 &
 ## What's next?
 
 - Try adding your own page using the walkthrough above
-- Run `composer test` to confirm everything still works after your changes
+- Run `composer check` to confirm everything still works after your changes
 - Ask your AI assistant: "Add a page that shows the current time"
 - When you're ready to deploy, set `DEBUG_MODE=false` and `APP_ENV=production` in `.env`
 
